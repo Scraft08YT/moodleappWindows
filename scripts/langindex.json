@@ -1691,7 +1691,7 @@
   "core.courses.nocoursesyet": "moodle",
   "core.courses.nosearchresults": "wiki",
   "core.courses.notenroled": "completion",
-  "core.courses.notenrollable": "local_moodlemobileapp",
+  "core.courses.notenrollable": "enrol",
   "core.courses.otherenrolments": "local_moodlemobileapp",
   "core.courses.password": "local_moodlemobileapp",
   "core.courses.paymentrequired": "moodle",
