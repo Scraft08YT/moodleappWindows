@@ -716,7 +716,7 @@ export class AddonModQuizProvider {
             quiz.questiondecimalpoints = -1;
         }
 
-        if (quiz.questiondecimalpoints == -1) {
+        if (quiz.questiondecimalpoints === -1) {
             return quiz.decimalpoints ?? 1;
         }
 
@@ -784,7 +784,7 @@ export class AddonModQuizProvider {
         const messages: string[] = [];
 
         questions.forEach((question) => {
-            if (question.type != 'random' && !CoreQuestionDelegate.isQuestionSupported(question.type)) {
+            if (question.type !== 'random' && !CoreQuestionDelegate.isQuestionSupported(question.type)) {
                 // The question isn't supported.
                 messages.push(Translate.instant('core.question.questionmessage', {
                     $a: question.slot,
@@ -1001,7 +1001,7 @@ export class AddonModQuizProvider {
         let page = 0;
 
         for (let i = 0; i < split.length; i++) {
-            if (split[i] == '0') {
+            if (split[i] === '0') {
                 pages.push(page);
                 page++;
             }
@@ -1033,7 +1033,7 @@ export class AddonModQuizProvider {
         for (let i = 0; i < split.length; i++) {
             const value = Number(split[i]);
 
-            if (value == 0) {
+            if (value === 0) {
                 page++;
                 pageAdded = false;
             } else if (!pageAdded && questions[value]) {
@@ -1055,7 +1055,7 @@ export class AddonModQuizProvider {
         const notSupported: string[] = [];
 
         questionTypes.forEach((type) => {
-            if (type != 'random' && !CoreQuestionDelegate.isQuestionSupported(type)) {
+            if (type !== 'random' && !CoreQuestionDelegate.isQuestionSupported(type)) {
                 notSupported.push(type);
             }
         });
