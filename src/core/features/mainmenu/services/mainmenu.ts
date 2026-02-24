@@ -155,7 +155,7 @@ export class CoreMainMenuProvider {
         const handler = handlers.find((handler) => {
             const tabRoot = /^[^/]+/.exec(handler.page)?.[0] ?? handler.page;
 
-            return tabRoot == pageName;
+            return tabRoot === pageName;
         });
 
         return !!handler;
