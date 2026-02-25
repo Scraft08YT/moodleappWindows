@@ -43,8 +43,10 @@ export const enum AddonModQuizGradeMethods {
  * Possible states for an attempt.
  */
 export const enum AddonModQuizAttemptStates {
+    NOT_STARTED = 'notstarted', // Attempt has been pre-created.
     IN_PROGRESS = 'inprogress',
     OVERDUE = 'overdue',
+    SUBMITTED = 'submitted', // Attempt submitted but not yet graded.
     FINISHED = 'finished',
     ABANDONED = 'abandoned',
 }

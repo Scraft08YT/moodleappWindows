@@ -320,6 +320,8 @@ export class AddonModQuizHelperProvider {
      *
      * @param attemptId Attempt ID.
      * @param options Other options.
+     * @param options.cmId Course module ID.
+     * @param options.siteId Site ID. If not defined, current site.
      * @returns Promise resolved with the quiz ID.
      */
     async getQuizIdByAttemptId(attemptId: number, options: { cmId?: number; siteId?: string } = {}): Promise<number> {
@@ -362,7 +364,7 @@ export class AddonModQuizHelperProvider {
                 `${ADDON_MOD_QUIZ_PAGE_NAME}/${module.course}/${module.id}/review/${attemptId}`,
                 {
                     params: {
-                        page: page == undefined || isNaN(page) ? -1 : page,
+                        page: page === undefined || isNaN(page) ? -1 : page,
                     },
                     siteId,
                 },

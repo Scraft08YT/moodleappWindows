@@ -113,7 +113,7 @@ export class AddonModQuizSyncProvider extends CoreCourseActivitySyncBaseProvider
             // Attempt wasn't finished at start. Check if it's finished now.
             const attempts = await AddonModQuiz.getUserAttempts(quiz.id, { cmId: quiz.coursemodule, siteId });
 
-            const attempt = attempts.find(attempt => attempt.id == options?.onlineAttempt?.id);
+            const attempt = attempts.find(attempt => attempt.id === options?.onlineAttempt?.id);
 
             attemptFinished = attempt ? AddonModQuiz.isAttemptCompleted(attempt.state) : false;
         }
@@ -329,7 +329,7 @@ export class AddonModQuizSyncProvider extends CoreCourseActivitySyncBaseProvider
         const onlineAttempts = await AddonModQuiz.getUserAttempts(quiz.id, modOptions);
 
         const lastAttemptId = onlineAttempts.length ? onlineAttempts[onlineAttempts.length - 1].id : undefined;
-        const onlineAttempt = onlineAttempts.find((attempt) => attempt.id == offlineAttempt.id);
+        const onlineAttempt = onlineAttempts.find((attempt) => attempt.id === offlineAttempt.id);
 
         if (!onlineAttempt || AddonModQuiz.isAttemptCompleted(onlineAttempt.state)) {
             // Attempt not found or it's finished in online. Discard it.

@@ -270,7 +270,7 @@ export class AddonModQuizPrefetchHandlerService extends CoreCourseActivityPrefet
         let startAttempt = false;
 
         if (canStart || attempt) {
-            if (canStart && (!attempt || AddonModQuiz.isAttemptCompleted(attempt.state))) {
+            if (canStart && AddonModQuiz.canStartAttemptBasedOnLastState(attempt?.state)) {
                 // Check if the user can attempt the quiz.
                 if (attemptAccessInfo.preventnewattemptreasons.length) {
                     throw new CoreError(CoreText.buildMessage(attemptAccessInfo.preventnewattemptreasons));

@@ -408,7 +408,7 @@ export default class AddonModQuizPlayerPage implements OnInit, OnDestroy, CanLea
 
         this.lastAttempt.finishedOffline = await AddonModQuiz.isAttemptFinishedOffline(this.lastAttempt.id);
 
-        this.newAttempt = AddonModQuiz.isAttemptCompleted(this.lastAttempt.state);
+        this.newAttempt = AddonModQuiz.canStartAttemptBasedOnLastState(this.lastAttempt.state);
     }
 
     /**

@@ -574,6 +574,9 @@ export class AddonModQuizIndexComponent extends CoreCourseModuleMainActivityComp
         accessInfo: AddonModQuizGetQuizAccessInformationWSResponse,
         attempts: AddonModQuizAttemptWSData[],
     ): Promise<QuizAttempt[]> {
+        // Don't display not started attempts.
+        attempts = attempts.filter(attempt => attempt.state !== AddonModQuizAttemptStates.NOT_STARTED);
+
         if (!attempts || !attempts.length) {
             // There are no attempts to treat.
             quiz.gradeFormatted = AddonModQuiz.formatGrade(quiz.grade, quiz.decimalpoints);
