@@ -36,9 +36,9 @@ export class CoreSitePluginsOnlyTitleBlockComponent extends CoreBlockBaseCompone
      * @inheritdoc
      */
     async ngOnInit(): Promise<void> {
-        super.ngOnInit();
+        this.fetchContentDefaultError = `Error getting block data: ${this.block.contents?.title ?? this.title}`;
 
-        this.fetchContentDefaultError = `Error getting ${this.block.contents?.title || 'block'} data.`;
+        await super.ngOnInit();
     }
 
     /**

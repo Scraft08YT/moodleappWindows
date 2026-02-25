@@ -58,6 +58,10 @@ export abstract class CoreBlockBaseComponent implements OnInit, OnChanges, Reloa
      * @inheritdoc
      */
     async ngOnInit(): Promise<void> {
+        if (!this.fetchContentDefaultError) {
+            this.fetchContentDefaultError = `Error getting block data: ${this.title}`;
+        }
+
         await this.loadContent();
     }
 
