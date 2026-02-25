@@ -34,9 +34,9 @@ export class CoreBlockOnlyTitleComponent extends CoreBlockBaseComponent implemen
      * @inheritdoc
      */
     async ngOnInit(): Promise<void> {
-        await super.ngOnInit();
+        this.fetchContentDefaultError = `Error getting block data: ${this.block.contents?.title ?? this.title}`;
 
-        this.fetchContentDefaultError = `Error getting ${this.block.contents?.title} data.`;
+        await super.ngOnInit();
     }
 
     /**
