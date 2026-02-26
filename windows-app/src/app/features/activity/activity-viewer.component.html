@@ -209,6 +209,13 @@
             <div class="assign-grade__display">
                 <span class="assign-grade__value">{{ g.gradefordisplay }}</span>
 
+                <!-- Points xx/xx -->
+                @if (gradeRaw() !== null) {
+                <span class="assign-grade__points">
+                    {{ gradeRaw()! | number:'1.0-2' }} / {{ assignment()?.grade ?? 100 }} Punkten
+                </span>
+                }
+
                 <!-- Progress slider -->
                 @if (gradePercentage() !== null) {
                 <div class="assign-grade__slider">

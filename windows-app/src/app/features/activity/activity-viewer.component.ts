@@ -111,15 +111,19 @@ export class ActivityViewerComponent implements OnInit {
         return `${minutes} Min.`;
     });
 
+    /** Raw numeric grade from the feedback. */
+    readonly gradeRaw = computed<number | null>(() => {
+        const feedback = this.submissionStatus()?.feedback?.grade;
+        if (!feedback?.grade) return null;
+        const raw = parseFloat(feedback.grade);
+        return isNaN(raw) ? null : raw;
+    });
+
     /** Calculates the grade percentage (0–100) from feedback grade and assignment max grade. */
     readonly gradePercentage = computed<number | null>(() => {
-        const feedback = this.submissionStatus()?.feedback?.grade;
-        const assign = this.assignment();
-        if (!feedback?.grade || !assign?.grade) return null;
-
-        const raw = parseFloat(feedback.grade);
-        const max = assign.grade;
-        if (isNaN(raw) || max <= 0) return null;
+        const raw = this.gradeRaw();
+        const max = this.assignment()?.grade;
+        if (raw == null || !max || max <= 0) return null;
 
         return Math.min(100, Math.max(0, (raw / max) * 100));
     });
