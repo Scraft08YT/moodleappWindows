@@ -14,12 +14,7 @@ jobs:
   release:
     permissions:
       contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [windows-latest]
-
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -43,17 +38,135 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build and release Tauri app
-        uses: tauri-apps/tauri-action@v0
+      - name: Verify signing key exists
+        shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) {
+            Write-Host "::error::TAURI_SIGNING_PRIVATE_KEY is empty or not set!"
+            exit 1
+          }
+          Write-Host "Signing key is present (length: $($env:TAURI_SIGNING_PRIVATE_KEY.Length) chars)"
+
+      - name: Build Tauri app with signing
+        shell: pwsh
+        env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npx tauri build 2>&1
+
+      - name: List build artifacts (debug)
+        shell: pwsh
+        run: |
+          Write-Host "=== NSIS bundle ==="
+          Get-ChildItem src-tauri/target/release/bundle/nsis -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+          Write-Host "=== MSI bundle ==="
+          Get-ChildItem src-tauri/target/release/bundle/msi -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+
+      - name: Collect artifacts and generate latest.json
+        id: collect
+        shell: pwsh
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+          # Find NSIS installer
+          $nsisExe = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $nsisExe) {
+            Write-Host "::error::No NSIS .exe found!"
+            exit 1
+          }
+          Write-Host "Found NSIS: $($nsisExe.Name)"
+          echo "nsis_path=$($nsisExe.FullName)" >> $env:GITHUB_OUTPUT
+          echo "nsis_name=$($nsisExe.Name)" >> $env:GITHUB_OUTPUT
+
+          # Find MSI installer
+          $msi = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msi) {
+            Write-Host "Found MSI: $($msi.Name)"
+            echo "msi_path=$($msi.FullName)" >> $env:GITHUB_OUTPUT
+            echo "msi_name=$($msi.Name)" >> $env:GITHUB_OUTPUT
+          }
+
+          # Find .sig files
+          $nsisExeSig = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $msiSig = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+
+          if ($nsisExeSig) {
+            Write-Host "Found NSIS signature: $($nsisExeSig.Name)"
+            echo "nsis_sig_path=$($nsisExeSig.FullName)" >> $env:GITHUB_OUTPUT
+            echo "nsis_sig_name=$($nsisExeSig.Name)" >> $env:GITHUB_OUTPUT
+            echo "has_nsis_sig=true" >> $env:GITHUB_OUTPUT
+
+            $sig = (Get-Content $nsisExeSig.FullName -Raw).Trim()
+            $tag = "${{ github.ref_name }}"
+            if (-not $tag -or $tag -eq "") { $tag = "desktop-v$version" }
+            $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$($nsisExe.Name)"
+
+            $latestJson = @{
+              version = "v$version"
+              notes = "Neue Version der Moodle Desktop App fuer Windows."
+              pub_date = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+              platforms = @{
+                "windows-x86_64" = @{
+                  signature = $sig
+                  url = $downloadUrl
+                }
+              }
+            } | ConvertTo-Json -Depth 4
+
+            $latestJsonPath = "src-tauri/target/release/bundle/latest.json"
+            Set-Content -Path $latestJsonPath -Value $latestJson -Encoding UTF8
+            Write-Host "Generated latest.json:"
+            Get-Content $latestJsonPath
+            echo "latest_json_path=$((Resolve-Path $latestJsonPath).Path)" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::No .sig files found — signing may have failed! Generating latest.json without signature."
+            echo "has_nsis_sig=false" >> $env:GITHUB_OUTPUT
+
+            # Still generate latest.json with empty signature for debugging
+            $tag = "${{ github.ref_name }}"
+            if (-not $tag -or $tag -eq "") { $tag = "desktop-v$version" }
+            $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$($nsisExe.Name)"
+
+            $latestJson = @{
+              version = "v$version"
+              notes = "Neue Version der Moodle Desktop App fuer Windows."
+              pub_date = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+              platforms = @{
+                "windows-x86_64" = @{
+                  signature = ""
+                  url = $downloadUrl
+                }
+              }
+            } | ConvertTo-Json -Depth 4
+
+            $latestJsonPath = "src-tauri/target/release/bundle/latest.json"
+            Set-Content -Path $latestJsonPath -Value $latestJson -Encoding UTF8
+            Write-Host "Generated latest.json (without signature):"
+            Get-Content $latestJsonPath
+            echo "latest_json_path=$((Resolve-Path $latestJsonPath).Path)" >> $env:GITHUB_OUTPUT
+          }
+
+          if ($msiSig) {
+            Write-Host "Found MSI signature: $($msiSig.Name)"
+            echo "msi_sig_path=$($msiSig.FullName)" >> $env:GITHUB_OUTPUT
+            echo "msi_sig_name=$($msiSig.Name)" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          projectPath: windows-app
-          tagName: desktop-v__VERSION__
-          releaseName: 'Moodle Desktop v__VERSION__'
-          releaseBody: 'Neue Version der Moodle Desktop App für Windows.'
-          releaseDraft: false
+          tag_name: ${{ github.ref_name }}
+          name: 'Moodle Desktop v${{ steps.collect.outputs.version }}'
+          body: 'Neue Version der Moodle Desktop App für Windows.'
+          draft: false
           prerelease: false
-          includeUpdaterJson: true
+          make_latest: true
+          files: |
+            ${{ steps.collect.outputs.nsis_path }}
+            ${{ steps.collect.outputs.msi_path }}
+            ${{ steps.collect.outputs.nsis_sig_path }}
+            ${{ steps.collect.outputs.msi_sig_path }}
+            ${{ steps.collect.outputs.latest_json_path }}
