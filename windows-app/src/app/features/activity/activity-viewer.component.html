@@ -208,6 +208,24 @@
             <h3 class="assign-section-title">🎓 Bewertung</h3>
             <div class="assign-grade__display">
                 <span class="assign-grade__value">{{ g.gradefordisplay }}</span>
+
+                <!-- Progress slider -->
+                @if (gradePercentage() !== null) {
+                <div class="assign-grade__slider">
+                    <div class="assign-grade__track">
+                        <div class="assign-grade__fill" [class.assign-grade__fill--excellent]="gradePercentage()! >= 80"
+                            [class.assign-grade__fill--good]="gradePercentage()! >= 60 && gradePercentage()! < 80"
+                            [class.assign-grade__fill--fair]="gradePercentage()! >= 40 && gradePercentage()! < 60"
+                            [class.assign-grade__fill--poor]="gradePercentage()! < 40" [style.width.%]="gradePercentage()!">
+                        </div>
+                    </div>
+                    <div class="assign-grade__labels">
+                        <span>0</span>
+                        <span class="assign-grade__pct">{{ gradePercentage()! | number:'1.0-1' }}%</span>
+                        <span>{{ assignment()?.grade ?? 100 }}</span>
+                    </div>
+                </div>
+                }
             </div>
             @if (submissionStatus()?.feedback?.plugins?.length) {
             <div class="assign-grade__feedback">

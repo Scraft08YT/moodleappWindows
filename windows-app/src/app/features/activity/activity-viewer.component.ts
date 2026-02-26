@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, type OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { CourseService } from '../../core/services/course.service';
@@ -18,7 +18,7 @@ import type { CourseModule } from '../../core/models/course.model';
 @Component({
     selector: 'app-activity-viewer',
     standalone: true,
-    imports: [RouterLink, DatePipe, NgTemplateOutlet, FormsModule],
+    imports: [RouterLink, DatePipe, DecimalPipe, NgTemplateOutlet, FormsModule],
     templateUrl: './activity-viewer.component.html',
     styleUrl: './activity-viewer.component.scss',
 })
@@ -109,6 +109,19 @@ export class ActivityViewerComponent implements OnInit {
         if (days > 0) return `${days} Tag${days > 1 ? 'e' : ''}, ${hours} Std.`;
         if (hours > 0) return `${hours} Std., ${minutes} Min.`;
         return `${minutes} Min.`;
+    });
+
+    /** Calculates the grade percentage (0–100) from feedback grade and assignment max grade. */
+    readonly gradePercentage = computed<number | null>(() => {
+        const feedback = this.submissionStatus()?.feedback?.grade;
+        const assign = this.assignment();
+        if (!feedback?.grade || !assign?.grade) return null;
+
+        const raw = parseFloat(feedback.grade);
+        const max = assign.grade;
+        if (isNaN(raw) || max <= 0) return null;
+
+        return Math.min(100, Math.max(0, (raw / max) * 100));
     });
 
     // --- Page/Resource state ---
