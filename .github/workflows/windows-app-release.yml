@@ -56,13 +56,41 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npx tauri build 2>&1
 
-      - name: List build artifacts (debug)
+      - name: Sign bundles manually
         shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           Write-Host "=== NSIS bundle ==="
           Get-ChildItem src-tauri/target/release/bundle/nsis -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
           Write-Host "=== MSI bundle ==="
           Get-ChildItem src-tauri/target/release/bundle/msi -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+
+          # Sign NSIS exe
+          $nsisExe = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe" -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "\.sig$" } | Select-Object -First 1
+          if ($nsisExe) {
+            Write-Host "Signing NSIS: $($nsisExe.FullName)"
+            npx tauri signer sign "$($nsisExe.FullName)" -k "$env:TAURI_SIGNING_PRIVATE_KEY" -p "$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD" 2>&1
+            if (Test-Path "$($nsisExe.FullName).sig") {
+              Write-Host "NSIS signature created successfully!"
+            } else {
+              Write-Host "::error::Failed to create NSIS signature!"
+              exit 1
+            }
+          }
+
+          # Sign MSI
+          $msi = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi" -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "\.sig$" } | Select-Object -First 1
+          if ($msi) {
+            Write-Host "Signing MSI: $($msi.FullName)"
+            npx tauri signer sign "$($msi.FullName)" -k "$env:TAURI_SIGNING_PRIVATE_KEY" -p "$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD" 2>&1
+            if (Test-Path "$($msi.FullName).sig") {
+              Write-Host "MSI signature created successfully!"
+            } else {
+              Write-Host "::warning::Failed to create MSI signature"
+            }
+          }
 
       - name: Collect artifacts and generate latest.json
         id: collect
@@ -70,90 +98,65 @@ jobs:
         run: |
           $version = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
           echo "version=$version" >> $env:GITHUB_OUTPUT
+          $tag = "${{ github.ref_name }}"
+          if (-not $tag -or $tag -eq "") { $tag = "desktop-v$version" }
 
-          # Find NSIS installer
-          $nsisExe = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $nsisExe) {
-            Write-Host "::error::No NSIS .exe found!"
-            exit 1
-          }
+          # Find NSIS installer and its signature
+          $nsisExe = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe" -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "\.sig$" } | Select-Object -First 1
+          if (-not $nsisExe) { Write-Host "::error::No NSIS .exe found!"; exit 1 }
           Write-Host "Found NSIS: $($nsisExe.Name)"
           echo "nsis_path=$($nsisExe.FullName)" >> $env:GITHUB_OUTPUT
-          echo "nsis_name=$($nsisExe.Name)" >> $env:GITHUB_OUTPUT
 
-          # Find MSI installer
-          $msi = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $nsisExeSig = Get-Item "$($nsisExe.FullName).sig" -ErrorAction SilentlyContinue
+          if ($nsisExeSig) {
+            Write-Host "Found NSIS sig: $($nsisExeSig.Name)"
+            echo "nsis_sig_path=$($nsisExeSig.FullName)" >> $env:GITHUB_OUTPUT
+          }
+
+          # Find MSI installer and its signature
+          $msi = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi" -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "\.sig$" } | Select-Object -First 1
           if ($msi) {
             Write-Host "Found MSI: $($msi.Name)"
             echo "msi_path=$($msi.FullName)" >> $env:GITHUB_OUTPUT
-            echo "msi_name=$($msi.Name)" >> $env:GITHUB_OUTPUT
+            $msiSig = Get-Item "$($msi.FullName).sig" -ErrorAction SilentlyContinue
+            if ($msiSig) {
+              echo "msi_sig_path=$($msiSig.FullName)" >> $env:GITHUB_OUTPUT
+            }
           }
 
-          # Find .sig files
-          $nsisExeSig = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter "*.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
-          $msiSig = Get-ChildItem src-tauri/target/release/bundle/msi -Filter "*.msi.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          # URL-encode the filename (spaces -> %20) for the download URL
+          $encodedName = [Uri]::EscapeDataString($nsisExe.Name)
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$encodedName"
+          Write-Host "Download URL: $downloadUrl"
 
+          # Read signature content
+          $sig = ""
           if ($nsisExeSig) {
-            Write-Host "Found NSIS signature: $($nsisExeSig.Name)"
-            echo "nsis_sig_path=$($nsisExeSig.FullName)" >> $env:GITHUB_OUTPUT
-            echo "nsis_sig_name=$($nsisExeSig.Name)" >> $env:GITHUB_OUTPUT
-            echo "has_nsis_sig=true" >> $env:GITHUB_OUTPUT
-
             $sig = (Get-Content $nsisExeSig.FullName -Raw).Trim()
-            $tag = "${{ github.ref_name }}"
-            if (-not $tag -or $tag -eq "") { $tag = "desktop-v$version" }
-            $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$($nsisExe.Name)"
-
-            $latestJson = @{
-              version = "v$version"
-              notes = "Neue Version der Moodle Desktop App fuer Windows."
-              pub_date = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
-              platforms = @{
-                "windows-x86_64" = @{
-                  signature = $sig
-                  url = $downloadUrl
-                }
-              }
-            } | ConvertTo-Json -Depth 4
-
-            $latestJsonPath = "src-tauri/target/release/bundle/latest.json"
-            Set-Content -Path $latestJsonPath -Value $latestJson -Encoding UTF8
-            Write-Host "Generated latest.json:"
-            Get-Content $latestJsonPath
-            echo "latest_json_path=$((Resolve-Path $latestJsonPath).Path)" >> $env:GITHUB_OUTPUT
+            Write-Host "Signature (first 60 chars): $($sig.Substring(0, [Math]::Min(60, $sig.Length)))..."
           } else {
-            Write-Host "::warning::No .sig files found — signing may have failed! Generating latest.json without signature."
-            echo "has_nsis_sig=false" >> $env:GITHUB_OUTPUT
+            Write-Host "::error::No NSIS signature found!"
+            exit 1
+          }
 
-            # Still generate latest.json with empty signature for debugging
-            $tag = "${{ github.ref_name }}"
-            if (-not $tag -or $tag -eq "") { $tag = "desktop-v$version" }
-            $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$($nsisExe.Name)"
-
-            $latestJson = @{
-              version = "v$version"
-              notes = "Neue Version der Moodle Desktop App fuer Windows."
-              pub_date = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
-              platforms = @{
-                "windows-x86_64" = @{
-                  signature = ""
-                  url = $downloadUrl
-                }
+          # Build latest.json
+          $latestJson = @{
+            version = "v$version"
+            notes = "Neue Version der Moodle Desktop App fuer Windows."
+            pub_date = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $sig
+                url = $downloadUrl
               }
-            } | ConvertTo-Json -Depth 4
+            }
+          } | ConvertTo-Json -Depth 4
 
-            $latestJsonPath = "src-tauri/target/release/bundle/latest.json"
-            Set-Content -Path $latestJsonPath -Value $latestJson -Encoding UTF8
-            Write-Host "Generated latest.json (without signature):"
-            Get-Content $latestJsonPath
-            echo "latest_json_path=$((Resolve-Path $latestJsonPath).Path)" >> $env:GITHUB_OUTPUT
-          }
-
-          if ($msiSig) {
-            Write-Host "Found MSI signature: $($msiSig.Name)"
-            echo "msi_sig_path=$($msiSig.FullName)" >> $env:GITHUB_OUTPUT
-            echo "msi_sig_name=$($msiSig.Name)" >> $env:GITHUB_OUTPUT
-          }
+          $latestJsonPath = "src-tauri/target/release/bundle/latest.json"
+          Set-Content -Path $latestJsonPath -Value $latestJson -Encoding UTF8
+          Write-Host "Generated latest.json:"
+          Get-Content $latestJsonPath
+          echo "latest_json_path=$((Resolve-Path $latestJsonPath).Path)" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
