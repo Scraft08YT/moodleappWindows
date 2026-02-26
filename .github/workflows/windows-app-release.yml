@@ -124,9 +124,10 @@ jobs:
             }
           }
 
-          # URL-encode the filename (spaces -> %20) for the download URL
-          $encodedName = [Uri]::EscapeDataString($nsisExe.Name)
-          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$encodedName"
+          # GitHub replaces spaces with dots in release asset names,
+          # so we must match that in the download URL.
+          $githubAssetName = $nsisExe.Name -replace ' ', '.'
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$githubAssetName"
           Write-Host "Download URL: $downloadUrl"
 
           # Read signature content
