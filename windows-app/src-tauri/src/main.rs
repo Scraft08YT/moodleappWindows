@@ -23,8 +23,19 @@ fn main() {
             commands::set_window_effect,
         ])
         .setup(|app| {
-            // Apply Mica effect on Windows 11
             let window = app.get_webview_window("main").unwrap();
+
+            // Resize window to ~80% of the primary monitor
+            if let Some(monitor) = window.current_monitor().ok().flatten() {
+                let screen = monitor.size();
+                let scale = monitor.scale_factor();
+                let w = (screen.width as f64 / scale * 0.80) as f64;
+                let h = (screen.height as f64 / scale * 0.80) as f64;
+                let _ = window.set_size(tauri::LogicalSize::new(w, h));
+                let _ = window.center();
+            }
+
+            // Apply Mica effect on Windows 11
             #[cfg(target_os = "windows")]
             {
                 use window_vibrancy::apply_mica;

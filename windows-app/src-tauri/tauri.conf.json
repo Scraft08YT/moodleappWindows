@@ -1,6 +1,6 @@
 {
     "productName": "Moodle Desktop",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "identifier": "com.moodle.desktop",
     "build": {
         "frontendDist": "../dist/moodle-desktop/browser",
@@ -13,8 +13,8 @@
             {
                 "label": "main",
                 "title": "Moodle Desktop",
-                "width": 1280,
-                "height": 800,
+                "width": 1100,
+                "height": 700,
                 "minWidth": 900,
                 "minHeight": 600,
                 "resizable": true,

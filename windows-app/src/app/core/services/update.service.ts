@@ -67,21 +67,16 @@ export class UpdateService {
             const msg = err instanceof Error ? err.message : String(err);
 
             // Network/404 errors mean no release exists yet
-            if (msg.includes('404') || msg.includes('network') || msg.includes('fetch') || msg.includes('status')) {
+            if (msg.includes('404') || msg.includes('network') || msg.includes('fetch')) {
                 this.status.set('up-to-date');
                 this.errorMessage.set('');
                 return false;
             }
 
-            // Empty pubkey during development — not a real error
-            if (msg.includes('pubkey') || msg.includes('signature') || msg.includes('key')) {
-                this.status.set('up-to-date');
-                this.errorMessage.set('');
-                return false;
-            }
-
+            // Show all other errors including signature/key issues
             this.status.set('error');
-            this.errorMessage.set('Update-Prüfung fehlgeschlagen: ' + msg);
+            this.errorMessage.set(msg);
+            console.error('[UpdateService] check failed:', msg);
             return false;
         }
     }
