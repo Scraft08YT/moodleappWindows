@@ -1,0 +1,65 @@
+<div class="notifications-page">
+    <header class="notifications-page__header">
+        <h1>Benachrichtigungen</h1>
+        @if (unreadCount() > 0) {
+        <button class="btn-subtle" (click)="markAllAsRead()">
+            Alle als gelesen markieren
+        </button>
+        }
+    </header>
+
+    @if (loading()) {
+    <div class="notifications-page__loading">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="skeleton-item card">
+            <div class="skeleton skeleton--circle"></div>
+            <div class="skeleton-item__text">
+                <div class="skeleton skeleton--sm"></div>
+                <div class="skeleton skeleton--md"></div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else if (notifications().length === 0) {
+    <div class="notifications-page__empty">
+        <svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M24 4c-7.18 0-13 5.82-13 13v8l-3 6h32l-3-6v-8c0-7.18-5.82-13-13-13z" />
+            <path d="M20 37a4 4 0 008 0" />
+        </svg>
+        <p>Keine Benachrichtigungen vorhanden.</p>
+    </div>
+    } @else {
+    <div class="notifications-list scroll-area">
+        @for (notification of notifications(); track notification.id) {
+        <div class="notification-item card" [class.notification-item--unread]="!notification.read" (click)="markAsRead(notification.id)">
+
+            <!-- Unread indicator -->
+            @if (!notification.read) {
+            <span class="notification-item__dot"></span>
+            }
+
+            <!-- Icon -->
+            <div class="notification-item__icon">
+                <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                    <path d="M10 2a6.5 6.5 0 00-6.5 6.5v4L2 15h16l-1.5-2.5v-4A6.5 6.5 0 0010 2zm-2 15a2 2 0 004 0H8z" />
+                </svg>
+            </div>
+
+            <!-- Content -->
+            <div class="notification-item__content">
+                <div class="notification-item__header">
+                    <span class="notification-item__subject">{{ notification.subject }}</span>
+                    <span class="notification-item__time text-muted">{{ formatDate(notification.timeCreated) }}</span>
+                </div>
+                <p class="notification-item__text text-muted">{{ notification.smallMessage }}</p>
+                @if (notification.contextUrl) {
+                <span class="notification-item__source text-muted">
+                    {{ notification.contextUrlName || 'Quelle anzeigen' }}
+                </span>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    }
+</div>

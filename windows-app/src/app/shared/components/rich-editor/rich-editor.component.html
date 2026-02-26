@@ -1,0 +1,53 @@
+<div class="rich-editor" [class.rich-editor--disabled]="disabled()">
+    <!-- Toolbar -->
+    <div class="rich-editor__toolbar">
+        <button type="button" class="toolbar-btn" (click)="execCommand('bold')" title="Fett">
+            <strong>B</strong>
+        </button>
+        <button type="button" class="toolbar-btn" (click)="execCommand('italic')" title="Kursiv">
+            <em>I</em>
+        </button>
+        <button type="button" class="toolbar-btn" (click)="execCommand('underline')" title="Unterstrichen">
+            <u>U</u>
+        </button>
+        <span class="toolbar-sep"></span>
+        <button type="button" class="toolbar-btn" (click)="execCommand('insertUnorderedList')" title="Aufzählung">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <circle cx="2" cy="4" r="1.5" />
+                <rect x="5" y="3" width="10" height="2" rx="1" />
+                <circle cx="2" cy="8" r="1.5" />
+                <rect x="5" y="7" width="10" height="2" rx="1" />
+                <circle cx="2" cy="12" r="1.5" />
+                <rect x="5" y="11" width="10" height="2" rx="1" />
+            </svg>
+        </button>
+        <button type="button" class="toolbar-btn" (click)="execCommand('insertOrderedList')" title="Nummerierte Liste">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <text x="0" y="5" font-size="5" font-weight="bold">1.</text>
+                <rect x="5" y="3" width="10" height="2" rx="1" />
+                <text x="0" y="9" font-size="5" font-weight="bold">2.</text>
+                <rect x="5" y="7" width="10" height="2" rx="1" />
+                <text x="0" y="13" font-size="5" font-weight="bold">3.</text>
+                <rect x="5" y="11" width="10" height="2" rx="1" />
+            </svg>
+        </button>
+        <span class="toolbar-sep"></span>
+        <button type="button" class="toolbar-btn" (click)="insertLink()" title="Link einfügen">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <path
+                    d="M6.354 5.354a.5.5 0 010-.708l2-2a3 3 0 114.243 4.243l-2 2a.5.5 0 01-.708-.708l2-2a2 2 0 00-2.828-2.828l-2 2a.5.5 0 01-.707 0zM9.646 10.646a.5.5 0 010 .708l-2 2a3 3 0 11-4.243-4.243l2-2a.5.5 0 01.708.708l-2 2a2 2 0 002.828 2.828l2-2a.5.5 0 01.707 0zM5.354 10.646a.5.5 0 010-.708l5-5a.5.5 0 01.708.708l-5 5a.5.5 0 01-.708 0z" />
+            </svg>
+        </button>
+        <button type="button" class="toolbar-btn" (click)="execCommand('removeFormat')" title="Formatierung entfernen">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <path
+                    d="M1.354 1.354a.5.5 0 01.707 0L14.646 13.94a.5.5 0 01-.707.707L1.354 2.06a.5.5 0 010-.707zM3.5 3h2.793l1 1H4.17L3 13h2.5l.323-2.585 1 1L6.5 14H2l1.37-10H3.5zM13 3H7.5l1 1H12l-.685 5.137L12.32 10.14 13 4V3z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Editable Area -->
+    <div class="rich-editor__content" [attr.contenteditable]="!disabled()" [attr.data-placeholder]="placeholder()"
+        [style.minHeight]="minHeight()" [innerHTML]="html()" (input)="onInput($event)" (blur)="onBlur()">
+    </div>
+</div>

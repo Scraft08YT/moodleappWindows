@@ -1,0 +1,78 @@
+<div class="calendar-page">
+    <header class="calendar-page__header">
+        <h1>Kalender</h1>
+    </header>
+
+    <div class="calendar-page__body">
+        <!-- Calendar Grid -->
+        <section class="calendar-grid card">
+            <!-- Month Navigation -->
+            <div class="calendar-grid__nav">
+                <button class="btn-subtle" (click)="previousMonth()">
+                    <svg viewBox="0 0 12 12" width="14" height="14" fill="currentColor">
+                        <path d="M7.85 2.15a.5.5 0 010 .7L4.71 6l3.14 3.15a.5.5 0 01-.7.7l-3.5-3.5a.5.5 0 010-.7l3.5-3.5a.5.5 0 01.7 0z" />
+                    </svg>
+                </button>
+                <h2 class="calendar-grid__month">{{ monthName() }}</h2>
+                <button class="btn-subtle" (click)="nextMonth()">
+                    <svg viewBox="0 0 12 12" width="14" height="14" fill="currentColor">
+                        <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Weekday Headers -->
+            <div class="calendar-grid__weekdays">
+                @for (day of weekdays; track day) {
+                <span class="calendar-grid__weekday">{{ day }}</span>
+                }
+            </div>
+
+            <!-- Day Grid -->
+            <div class="calendar-grid__days">
+                @for (day of calendarDays(); track day.date.toISOString()) {
+                <div class="calendar-day" [class.calendar-day--other]="!day.isCurrentMonth" [class.calendar-day--today]="isToday(day.date)">
+                    <span class="calendar-day__number">{{ day.date.getDate() }}</span>
+                    @if (day.events.length > 0) {
+                    <div class="calendar-day__events">
+                        @for (event of day.events.slice(0, 2); track event.id) {
+                        <span class="calendar-day__event" [attr.data-type]="event.eventType" [title]="event.name">
+                            {{ event.name }}
+                        </span>
+                        }
+                        @if (day.events.length > 2) {
+                        <span class="calendar-day__more">+{{ day.events.length - 2 }}</span>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </section>
+
+        <!-- Upcoming Events Sidebar -->
+        <aside class="calendar-page__upcoming">
+            <h3>Nächste Termine</h3>
+            <div class="upcoming-list scroll-area">
+                @for (event of upcomingEvents(); track event.id) {
+                <div class="upcoming-item card">
+                    <div class="upcoming-item__indicator" [attr.data-type]="event.eventType"></div>
+                    <div class="upcoming-item__content">
+                        <span class="upcoming-item__name">{{ event.name }}</span>
+                        <span class="upcoming-item__time text-muted">
+                            {{ formatEventDateTime(event) }}
+                        </span>
+                        @if (event.courseName) {
+                        <span class="upcoming-item__course text-muted">{{ event.courseName }}</span>
+                        }
+                    </div>
+                </div>
+                } @empty {
+                <p class="text-muted" style="padding: 16px; text-align: center;">
+                    Keine anstehenden Termine.
+                </p>
+                }
+            </div>
+        </aside>
+    </div>
+</div>

@@ -1,0 +1,166 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.grades-page {
+    &__header {
+        margin-bottom: $spacing-xl;
+
+        h1 {
+            font-size: $font-size-display;
+            font-weight: $font-weight-bold;
+        }
+    }
+
+    &__loading {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+    }
+
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $spacing-base;
+        padding: $spacing-xxxl;
+        color: var(--fg-3);
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+    }
+}
+
+.grade-skeleton {
+    padding: $spacing-md !important;
+}
+
+// --- Course Grade Card ---
+.grade-course {
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        width: 100%;
+        padding: $spacing-md $spacing-lg;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        text-align: left;
+        color: var(--fg-1);
+        transition: background $duration-fast $easing-decelerate;
+
+        &:hover {
+            background: var(--bg-hover);
+        }
+    }
+
+    &__info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__name {
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+        @include text-ellipsis;
+    }
+
+    &__short {
+        font-size: $font-size-xs;
+        display: block;
+    }
+
+    &__grade {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-bold;
+        flex-shrink: 0;
+        min-width: 60px;
+        text-align: right;
+    }
+
+    &__chevron {
+        flex-shrink: 0;
+        color: var(--fg-3);
+        transition: transform $duration-normal $easing-decelerate;
+
+        &--open {
+            transform: rotate(90deg);
+        }
+    }
+
+    &__details {
+        padding: 0 $spacing-lg $spacing-lg;
+        animation: slide-in-top $duration-normal $easing-decelerate;
+    }
+}
+
+@keyframes slide-in-top {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// --- Grade Table ---
+.grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $font-size-sm;
+
+    th {
+        text-align: left;
+        padding: $spacing-xs $spacing-sm;
+        color: var(--fg-3);
+        font-weight: $font-weight-semibold;
+        border-bottom: 1px solid var(--stroke-2);
+        font-size: $font-size-xs;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    th:not(:first-child) {
+        text-align: right;
+        width: 100px;
+    }
+}
+
+.grade-row {
+    td {
+        padding: $spacing-xs $spacing-sm;
+        border-bottom: 1px solid var(--stroke-1);
+        vertical-align: middle;
+    }
+
+    &__value {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--fg-2);
+    }
+
+    &--category {
+        td {
+            font-weight: $font-weight-semibold;
+            background: var(--bg-3);
+        }
+    }
+
+    &--course {
+        td {
+            font-weight: $font-weight-bold;
+            border-top: 2px solid var(--stroke-2);
+        }
+    }
+}
+
+.grade-items__loading {
+    padding: $spacing-sm 0;
+}

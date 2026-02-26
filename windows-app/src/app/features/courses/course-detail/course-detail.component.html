@@ -1,0 +1,135 @@
+<div class="course-detail">
+    <!-- Back navigation -->
+    <a class="course-detail__back" routerLink="/courses">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+            <path
+                d="M12.35 4.15a.5.5 0 010 .7L7.71 9.5H16.5a.5.5 0 010 1H7.71l4.64 4.65a.5.5 0 01-.7.7l-5.5-5.5a.5.5 0 010-.7l5.5-5.5a.5.5 0 01.7 0z" />
+        </svg>
+        Zurück zu Kurse
+    </a>
+
+    <!-- Course hero header -->
+    <div class="course-hero">
+        <h1 class="course-hero__title">{{ courseName() }}</h1>
+        @if (!loading() && sections().length > 0) {
+        <div class="course-hero__meta">
+            <span class="course-hero__stat">
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path
+                        d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                </svg>
+                {{ sections().length }} Abschnitte
+            </span>
+            <span class="course-hero__stat">
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path
+                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.41a1 1 0 00-.3-.7l-3.41-3.42A1 1 0 0011.59 3H6zm0 1h5v3a1 1 0 001 1h3v9a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                </svg>
+                {{ getTotalModules() }} Aktivitäten
+            </span>
+        </div>
+        }
+    </div>
+
+    @if (loading()) {
+    <div class="course-detail__sections">
+        @for (i of [1, 2, 3]; track i) {
+        <div class="section card">
+            <div class="skeleton" style="height: 24px; width: 45%; margin-bottom: 16px;"></div>
+            <div class="skeleton" style="height: 56px; width: 100%; margin-bottom: 10px; border-radius: 10px;"></div>
+            <div class="skeleton" style="height: 56px; width: 100%; margin-bottom: 10px; border-radius: 10px;"></div>
+            <div class="skeleton" style="height: 56px; width: 85%; border-radius: 10px;"></div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="course-detail__sections">
+        @for (section of sections(); track section.id) {
+        <div class="section card" [class.section--expanded]="isSectionExpanded(section.id)">
+            <button class="section__header" (click)="toggleSection(section.id)">
+                <div class="section__header-left">
+                    <svg class="section__chevron" [class.section__chevron--expanded]="isSectionExpanded(section.id)" viewBox="0 0 12 12"
+                        width="14" height="14" fill="currentColor">
+                        <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                    </svg>
+                    <h2 class="section__title">{{ section.name || 'Allgemein' }}</h2>
+                </div>
+                <span class="section__count">{{ section.modules.length }}</span>
+            </button>
+
+            @if (isSectionExpanded(section.id)) {
+            <div class="section__content">
+                @if (section.summary) {
+                <div class="section__summary" [innerHTML]="section.summary"></div>
+                }
+
+                <div class="module-list">
+                    @for (module of section.modules; track module.id) {
+                    <div class="module" [class.module--hidden]="!module.visible"
+                        [class.module--clickable]="isInteractiveModule(module.modname)" [attr.data-type]="getModuleType(module.modname)"
+                        (click)="isInteractiveModule(module.modname) ? openModule(module) : null">
+                        <div class="module__icon-wrap" [attr.data-type]="getModuleType(module.modname)">
+                            <span class="module__icon">{{ getModuleIcon(module.modname) }}</span>
+                        </div>
+                        <div class="module__content">
+                            <span class="module__name">{{ module.name }}</span>
+                            <div class="module__meta">
+                                <span class="module__type">{{ getModuleLabel(module.modname) }}</span>
+                                @if (module.description) {
+                                <span class="module__dot">·</span>
+                                <span class="module__description" [innerHTML]="module.description"></span>
+                                }
+                            </div>
+                        </div>
+                        <div class="module__trail">
+                            @if (module.contents.length > 0) {
+                            <div class="module__actions" (click)="$event.stopPropagation()">
+                                @for (content of module.contents; track content.filename) {
+                                @if (isFileDownloaded(content.fileurl)) {
+                                <button class="module__open" (click)="openDownloadedFile(content.fileurl)"
+                                    [title]="'Öffnen: ' + content.filename">
+                                    <span class="module__file-ext">{{ getFileExtension(content.filename) }}</span>
+                                    <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                        <path
+                                            d="M6 3a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V8.83a2 2 0 00-.59-1.42l-3.82-3.82A2 2 0 0010.17 3H6zm4 1.1L13.9 8H11a1 1 0 01-1-1V4.1z" />
+                                    </svg>
+                                </button>
+                                }
+                                <button class="module__download" (click)="downloadFile(content.fileurl, content.filename)"
+                                    [title]="'Download: ' + content.filename">
+                                    <span class="module__file-ext">{{ getFileExtension(content.filename) }}</span>
+                                    <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                        <path
+                                            d="M10 2a.5.5 0 01.5.5v8.8l2.65-2.65a.5.5 0 01.7.7l-3.5 3.5a.5.5 0 01-.7 0l-3.5-3.5a.5.5 0 01.7-.7l2.65 2.64V2.5A.5.5 0 0110 2zM3.5 14a.5.5 0 00-.5.5v1A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-1a.5.5 0 00-1 0v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 00-.5-.5z" />
+                                    </svg>
+                                </button>
+                                }
+                            </div>
+                            }
+                            @if (isInteractiveModule(module.modname)) {
+                            <svg class="module__chevron" viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                                <path
+                                    d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                            </svg>
+                            }
+                        </div>
+                    </div>
+                    } @empty {
+                    <p class="section__empty text-muted">Keine Aktivitäten in diesem Abschnitt.</p>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        } @empty {
+        <div class="course-detail__empty">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+                <path
+                    d="M8 6a2 2 0 00-2 2v24a2 2 0 002 2h7a5 5 0 015 5 .5.5 0 001 0 5 5 0 015-5h7a2 2 0 002-2V8a2 2 0 00-2-2h-7a7 7 0 00-5 2.1A7 7 0 0015 6H8z" />
+            </svg>
+            <p class="text-muted">Dieser Kurs hat keinen Inhalt.</p>
+        </div>
+        }
+    </div>
+    }
+</div>

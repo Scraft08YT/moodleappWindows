@@ -1,0 +1,65 @@
+<header class="titlebar">
+    <!-- App identity -->
+    <div class="titlebar__left" data-tauri-drag-region>
+        <div class="titlebar__icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#f57c00">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+            </svg>
+        </div>
+        <span class="titlebar__title" data-tauri-drag-region>{{ siteName() || 'Moodle Desktop' }}</span>
+    </div>
+
+    <!-- Drag area (spacer) -->
+    <div class="titlebar__drag" data-tauri-drag-region></div>
+
+    <!-- Controls -->
+    <div class="titlebar__controls">
+        <!-- Theme toggle -->
+        <button class="titlebar__btn" (click)="toggleThemeClick.emit()"
+            [attr.aria-label]="isDark() ? 'Switch to light theme' : 'Switch to dark theme'" title="Toggle theme">
+            @if (isDark()) {
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                <path
+                    d="M10 4a6 6 0 100 12 6 6 0 000-12zm0 10.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zM10 1a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 1zm0 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 16zM3.28 3.28a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06L3.28 4.34a.75.75 0 010-1.06zm11.32 11.32a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM1 10a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 011 10zm15 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0116 10zM3.28 16.72a.75.75 0 010-1.06l1.06-1.06a.75.75 0 111.06 1.06l-1.06 1.06a.75.75 0 01-1.06 0zm11.32-11.32a.75.75 0 010-1.06l1.06-1.06a.75.75 0 111.06 1.06l-1.06 1.06a.75.75 0 01-1.06 0z" />
+            </svg>
+            } @else {
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                <path d="M17.39 15.14A7.33 7.33 0 014.86 2.61a.5.5 0 00-.5-.87 8.5 8.5 0 1013.9 14.27.5.5 0 00-.87-.5v.03z" />
+            </svg>
+            }
+        </button>
+
+        <!-- Minimise -->
+        <button class="titlebar__btn" (click)="minimise()" aria-label="Minimise" title="Minimise">
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                <rect x="1" y="5.5" width="10" height="1" rx="0.5" />
+            </svg>
+        </button>
+
+        <!-- Maximise / Restore -->
+        <button class="titlebar__btn" (click)="maximise()" [attr.aria-label]="isMaximised() ? 'Restore' : 'Maximise'"
+            [title]="isMaximised() ? 'Wiederherstellen' : 'Maximieren'">
+            @if (isMaximised()) {
+            <!-- Restore icon (two overlapping rectangles) -->
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="3.5" y="3.5" width="6" height="6" rx="0.5" />
+                <path d="M3.5 5V2.5a1 1 0 011-1H9a1 1 0 011 1v4.5a1 1 0 01-1 1H7.5" />
+            </svg>
+            } @else {
+            <!-- Maximise icon (single rectangle) -->
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="2" y="2" width="8" height="8" rx="1" />
+            </svg>
+            }
+        </button>
+
+        <!-- Close -->
+        <button class="titlebar__btn titlebar__btn--close" (click)="close()" aria-label="Close" title="Close">
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                <path
+                    d="M1.35 1.35a.5.5 0 01.7 0L6 5.29l3.95-3.94a.5.5 0 01.7.7L6.71 6l3.94 3.95a.5.5 0 01-.7.7L6 6.71l-3.95 3.94a.5.5 0 01-.7-.7L5.29 6 1.35 2.05a.5.5 0 010-.7z" />
+            </svg>
+        </button>
+    </div>
+</header>

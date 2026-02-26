@@ -1,0 +1,289 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.dashboard {
+    &__header {
+        margin-bottom: $spacing-xl;
+    }
+
+    &__greeting {
+        font-size: $font-size-display;
+        font-weight: $font-weight-bold;
+        color: var(--fg-1);
+        margin-bottom: $spacing-xs;
+    }
+
+    &__summary {
+        font-size: $font-size-base;
+    }
+
+    &__stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: $spacing-base;
+        margin-bottom: $spacing-xxl;
+    }
+
+    &__section {
+        margin-bottom: $spacing-xxl;
+    }
+
+    &__section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: $spacing-base;
+
+        h2 {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-semibold;
+            color: var(--fg-1);
+        }
+    }
+
+    &__section-link {
+        font-size: $font-size-sm;
+        color: $color-brand-primary;
+        font-weight: $font-weight-semibold;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__empty {
+        padding: $spacing-xxl;
+        text-align: center;
+    }
+}
+
+// --- Stat Cards ---
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: $spacing-base;
+    padding: $spacing-lg !important;
+    text-decoration: none;
+    color: var(--fg-1);
+    cursor: pointer;
+
+    &__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: $radius-lg;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &--courses {
+            background: rgba($color-brand-primary, 0.1);
+            color: $color-brand-primary;
+        }
+
+        &--notifications {
+            background: rgba($color-error, 0.1);
+            color: $color-error;
+        }
+
+        &--events {
+            background: rgba($color-info, 0.1);
+            color: $color-info;
+        }
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__value {
+        font-size: $font-size-xxl;
+        font-weight: $font-weight-bold;
+        line-height: 1.2;
+    }
+
+    &__label {
+        font-size: $font-size-sm;
+        color: var(--fg-3);
+    }
+}
+
+// --- Course Cards ---
+.course-card {
+    text-decoration: none;
+    color: var(--fg-1);
+    overflow: hidden;
+    padding: 0 !important;
+    cursor: pointer;
+
+    &__image {
+        height: 140px;
+        overflow: hidden;
+        position: relative;
+        background: var(--bg-3);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform $duration-normal $easing-decelerate;
+        }
+    }
+
+    &__placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: $spacing-xs;
+        transition: transform $duration-normal $easing-decelerate;
+    }
+
+    &__placeholder-initials {
+        font-size: 2.5rem;
+        font-weight: $font-weight-bold;
+        color: rgba(255, 255, 255, 0.95);
+        line-height: 1;
+        letter-spacing: 0.02em;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    &__placeholder-name {
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        @include text-ellipsis;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    &:hover .course-card__image img,
+    &:hover .course-card__placeholder {
+        transform: scale(1.03);
+    }
+
+    &__favourite {
+        position: absolute;
+        top: $spacing-sm;
+        right: $spacing-sm;
+        color: $color-warning;
+        font-size: $font-size-lg;
+    }
+
+    &__body {
+        padding: $spacing-md;
+    }
+
+    &__title {
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+        @include text-clamp(2);
+        margin-bottom: $spacing-xxs;
+    }
+
+    &__shortname {
+        font-size: $font-size-sm;
+        display: block;
+        margin-bottom: $spacing-sm;
+    }
+
+    &__progress {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+    }
+
+    &__progress-bar {
+        flex: 1;
+        height: 4px;
+        background: var(--bg-3);
+        border-radius: $radius-circular;
+        overflow: hidden;
+    }
+
+    &__progress-fill {
+        height: 100%;
+        background: $color-brand-primary;
+        border-radius: $radius-circular;
+        transition: width $duration-slow $easing-decelerate;
+    }
+
+    &__progress-label {
+        font-size: $font-size-xs;
+        color: var(--fg-3);
+        flex-shrink: 0;
+    }
+}
+
+.course-card-skeleton {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+// --- Event List ---
+.events-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-base;
+
+    &__date {
+        width: 48px;
+        height: 48px;
+        border-radius: $radius-md;
+        background: rgba($color-brand-primary, 0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__day {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-bold;
+        line-height: 1.1;
+        color: $color-brand-primary;
+    }
+
+    &__month {
+        font-size: $font-size-xs;
+        color: $color-brand-primary;
+        text-transform: uppercase;
+    }
+
+    &__content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+        @include text-ellipsis;
+    }
+
+    &__meta {
+        font-size: $font-size-sm;
+    }
+
+    &__type {
+        font-size: $font-size-xs;
+        padding: $spacing-xxs $spacing-sm;
+        border-radius: $radius-circular;
+        background: var(--bg-3);
+        color: var(--fg-3);
+        flex-shrink: 0;
+        text-transform: capitalize;
+    }
+}

@@ -1,0 +1,232 @@
+<div class="messages-page">
+    <!-- Conversation List -->
+    <aside class="messages-page__list">
+        <div class="messages-page__list-header">
+            <h2>Nachrichten</h2>
+            <button class="messages-page__new-btn" (click)="openNewChat()" title="Neue Nachricht">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+                    <path
+                        d="M14.85 2.85a.5.5 0 01.7 0l1.6 1.6a.5.5 0 010 .7L6.35 15.95a.5.5 0 01-.24.13l-3.5 1a.5.5 0 01-.6-.61l1-3.5a.5.5 0 01.13-.24L14.85 2.85zM5 15l-.71 2.48L6.77 16.8l10.3-10.3-1.57-1.57L5.15 15.27 5 15z" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="messages-page__search">
+            <input class="input" type="search" placeholder="Unterhaltungen suchen…" [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)" />
+        </div>
+
+        <div class="messages-page__conversations scroll-area">
+            @if (loading()) {
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="conversation-skeleton">
+                <div class="skeleton" style="width:40px;height:40px;border-radius:50%;"></div>
+                <div style="flex:1;">
+                    <div class="skeleton" style="height:14px;width:60%;margin-bottom:6px;"></div>
+                    <div class="skeleton" style="height:12px;width:80%;"></div>
+                </div>
+            </div>
+            }
+            } @else {
+            @for (conv of filteredConversations(); track conv.id) {
+            <button class="conversation" [class.conversation--active]="selectedConversation()?.id === conv.id"
+                (click)="selectConversation(conv)">
+                <div class="conversation__avatar">
+                    @if (getConversationAvatar(conv)) {
+                    <img [src]="getConversationAvatar(conv)" [alt]="conv.name" />
+                    } @else {
+                    <span class="conversation__initials">{{ getConversationInitials(conv) }}</span>
+                    }
+                    @if (conv.members.length > 0 && conv.members[0].isOnline) {
+                    <span class="conversation__online"></span>
+                    }
+                </div>
+                <div class="conversation__content">
+                    <div class="conversation__top">
+                        <span class="conversation__name">{{ conv.name }}</span>
+                        @if (conv.messages.length > 0) {
+                        <span class="conversation__time text-muted">
+                            {{ formatTime(conv.messages[0].timeCreated) }}
+                        </span>
+                        }
+                    </div>
+                    <div class="conversation__bottom">
+                        @if (conv.messages.length > 0) {
+                        <span class="conversation__preview text-muted">
+                            {{ conv.messages[0].text }}
+                        </span>
+                        }
+                        @if (conv.unreadCount > 0) {
+                        <span class="badge">{{ conv.unreadCount }}</span>
+                        }
+                    </div>
+                </div>
+            </button>
+            } @empty {
+            <div class="messages-page__empty text-muted">
+                Keine Unterhaltungen.
+            </div>
+            }
+            }
+        </div>
+    </aside>
+
+    <!-- Message Detail -->
+    <main class="messages-page__detail">
+        @if (showNewChat()) {
+        <!-- New Chat Panel -->
+        <div class="messages-page__detail-header">
+            <button class="messages-page__back-btn" (click)="closeNewChat()">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M12.35 4.15a.5.5 0 010 .7L7.71 9.5H16.5a.5.5 0 010 1H7.71l4.64 4.65a.5.5 0 01-.7.7l-5.5-5.5a.5.5 0 010-.7l5.5-5.5a.5.5 0 01.7 0z" />
+                </svg>
+            </button>
+            <div>
+                <h3>Neue Nachricht</h3>
+                <span class="text-muted text-sm">Kontakt suchen</span>
+            </div>
+        </div>
+
+        <div class="new-chat">
+            <!-- User search -->
+            <div class="new-chat__search">
+                <label class="new-chat__label">An:</label>
+                <input class="input new-chat__input" type="search" placeholder="Name eingeben…" [ngModel]="userSearchQuery()"
+                    (ngModelChange)="onUserSearchInput($event)" autofocus />
+            </div>
+
+            @if (selectedUser(); as user) {
+            <!-- Selected user + compose -->
+            <div class="new-chat__selected">
+                <div class="new-chat__user-chip">
+                    <div class="conversation__avatar conversation__avatar--sm">
+                        @if (user.profileImageUrl) {
+                        <img [src]="user.profileImageUrl" [alt]="user.fullname" />
+                        } @else {
+                        <span class="conversation__initials">{{ getUserInitials(user.fullname) }}</span>
+                        }
+                    </div>
+                    <span>{{ user.fullname }}</span>
+                    <button class="new-chat__remove" (click)="selectedUser.set(null)">✕</button>
+                </div>
+            </div>
+
+            <div class="new-chat__compose">
+                <textarea class="input new-chat__textarea" rows="4" placeholder="Nachricht schreiben…" [ngModel]="newChatText()"
+                    (ngModelChange)="newChatText.set($event)" (keydown.control.enter)="sendNewMessage()"></textarea>
+
+                @if (newChatError()) {
+                <div class="new-chat__error">❌ {{ newChatError() }}</div>
+                }
+
+                <div class="new-chat__actions">
+                    <button class="btn-secondary" (click)="closeNewChat()">Abbrechen</button>
+                    <button class="btn-primary" (click)="sendNewMessage()" [disabled]="!newChatText().trim() || sendingNewMessage()">
+                        @if (sendingNewMessage()) {
+                        Wird gesendet…
+                        } @else {
+                        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                            <path
+                                d="M2.72 2.05a.5.5 0 01.53-.03l14.5 8a.5.5 0 010 .86l-14.5 8a.5.5 0 01-.73-.44V11h6.5a.5.5 0 000-1h-6.5V2.56a.5.5 0 01.2-.51z" />
+                        </svg>
+                        Senden
+                        }
+                    </button>
+                </div>
+            </div>
+            } @else {
+            <!-- User search results -->
+            <div class="new-chat__results scroll-area">
+                @if (userSearchLoading()) {
+                <div class="new-chat__loading text-muted">Suche…</div>
+                } @else if (userSearchQuery().trim().length >= 2) {
+                @for (user of userSearchResults(); track user.id) {
+                <button class="new-chat__result" (click)="selectUserForChat(user)">
+                    <div class="conversation__avatar conversation__avatar--sm">
+                        @if (user.profileImageUrl) {
+                        <img [src]="user.profileImageUrl" [alt]="user.fullname" />
+                        } @else {
+                        <span class="conversation__initials">{{ getUserInitials(user.fullname) }}</span>
+                        }
+                    </div>
+                    <span class="new-chat__result-name">{{ user.fullname }}</span>
+                </button>
+                } @empty {
+                <div class="new-chat__no-results text-muted">Keine Benutzer gefunden.</div>
+                }
+                } @else {
+                <div class="new-chat__hint text-muted">
+                    Gib mindestens 2 Zeichen ein, um nach Benutzern zu suchen.
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+        } @else if (selectedConversation()) {
+        <!-- Header -->
+        <div class="messages-page__detail-header">
+            <div class="conversation__avatar conversation__avatar--lg">
+                @if (getConversationAvatar(selectedConversation()!)) {
+                <img [src]="getConversationAvatar(selectedConversation()!)" [alt]="selectedConversation()!.name" />
+                } @else {
+                <span class="conversation__initials">{{ getConversationInitials(selectedConversation()!) }}</span>
+                }
+            </div>
+            <div>
+                <h3>{{ selectedConversation()!.name }}</h3>
+                @if (selectedConversation()!.memberCount > 2) {
+                <span class="text-muted text-sm">{{ selectedConversation()!.memberCount }} Mitglieder</span>
+                }
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-page__messages scroll-area">
+            @if (messagesLoading()) {
+            <div class="messages-page__loading text-muted">Lade Nachrichten…</div>
+            } @else if (messages().length === 0) {
+            <div class="messages-page__no-messages text-muted">
+                Noch keine Nachrichten. Schreibe die erste!
+            </div>
+            } @else {
+            @for (msg of messages(); track msg.id) {
+            <div class="message-bubble" [class.message-bubble--own]="msg.userId === currentUserId()">
+                <div class="message-bubble__text" [innerHTML]="msg.text"></div>
+                <span class="message-bubble__time text-muted">
+                    {{ formatTime(msg.timeCreated) }}
+                </span>
+            </div>
+            }
+            }
+        </div>
+
+        <!-- Compose -->
+        <div class="messages-page__compose">
+            <input class="input messages-page__input" type="text" placeholder="Nachricht schreiben…" [ngModel]="messageText()"
+                (ngModelChange)="messageText.set($event)" (keydown.enter)="sendMessage()" />
+            <button class="btn-primary messages-page__send-btn" (click)="sendMessage()" [disabled]="!messageText().trim()">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M2.72 2.05a.5.5 0 01.53-.03l14.5 8a.5.5 0 010 .86l-14.5 8a.5.5 0 01-.73-.44V11h6.5a.5.5 0 000-1h-6.5V2.56a.5.5 0 01.2-.51z" />
+                </svg>
+            </button>
+        </div>
+        } @else {
+        <div class="messages-page__placeholder">
+            <svg viewBox="0 0 48 48" width="64" height="64" fill="var(--fg-disabled)">
+                <path d="M24 4a20 20 0 00-17.4 29.9L4.5 41.6a1.5 1.5 0 001.9 1.9l7.7-2.1A20 20 0 1024 4z" />
+            </svg>
+            <p class="text-muted">Wähle eine Unterhaltung aus</p>
+            <button class="btn-primary" (click)="openNewChat()" style="margin-top: 12px;">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M14.85 2.85a.5.5 0 01.7 0l1.6 1.6a.5.5 0 010 .7L6.35 15.95a.5.5 0 01-.24.13l-3.5 1a.5.5 0 01-.6-.61l1-3.5a.5.5 0 01.13-.24L14.85 2.85z" />
+                </svg>
+                Neue Nachricht
+            </button>
+        </div>
+        }
+    </main>
+</div>

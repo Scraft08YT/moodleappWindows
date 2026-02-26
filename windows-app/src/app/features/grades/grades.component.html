@@ -1,0 +1,88 @@
+<div class="grades-page">
+    <header class="grades-page__header">
+        <h1>Noten</h1>
+    </header>
+
+    @if (loading()) {
+    <div class="grades-page__loading">
+        @for (i of [1, 2, 3, 4]; track i) {
+        <div class="card grade-skeleton">
+            <div class="skeleton" style="height: 20px; width: 60%;"></div>
+            <div class="skeleton" style="height: 16px; width: 30%; margin-top: 8px;"></div>
+        </div>
+        }
+    </div>
+    } @else if (courseGrades().length === 0) {
+    <div class="grades-page__empty">
+        <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+            <path
+                d="M8 4a2 2 0 00-2 2v36a2 2 0 002 2h20a2 2 0 002-2V16l-12-12H8zm11 1.5L29.5 16H21a2 2 0 01-2-2V5.5zM14 26a1 1 0 011-1h12a1 1 0 110 2H15a1 1 0 01-1-1zm1 4a1 1 0 100 2h8a1 1 0 100-2h-8z" />
+        </svg>
+        <p>Keine Noten verfügbar.</p>
+    </div>
+    } @else {
+    <div class="grades-page__list">
+        @for (grade of courseGrades(); track grade.courseid) {
+        <div class="grade-course card" [class.grade-course--expanded]="expandedCourse() === grade.courseid">
+            <button class="grade-course__header" (click)="toggleCourseGrades(grade.courseid)">
+                <div class="grade-course__info">
+                    <h3 class="grade-course__name">{{ grade.courseFullname }}</h3>
+                    <span class="grade-course__short text-muted">{{ grade.courseShortname }}</span>
+                </div>
+                <div class="grade-course__grade" [style.color]="getGradeColor(grade)">
+                    {{ grade.grade }}
+                </div>
+                <svg class="grade-course__chevron" [class.grade-course__chevron--open]="expandedCourse() === grade.courseid"
+                    viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                    <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                </svg>
+            </button>
+
+            @if (expandedCourse() === grade.courseid) {
+            <div class="grade-course__details">
+                @if (courseItemsLoading()) {
+                <div class="grade-items__loading">
+                    @for (i of [1, 2, 3]; track i) {
+                    <div class="skeleton" style="height: 32px; margin-bottom: 4px;"></div>
+                    }
+                </div>
+                } @else if (courseItems().length === 0) {
+                <p class="text-muted" style="padding: 12px 0;">Keine Notendetails verfügbar.</p>
+                } @else {
+                <table class="grade-table">
+                    <thead>
+                        <tr>
+                            <th>Aktivität</th>
+                            <th>Note</th>
+                            <th>Prozent</th>
+                            <th>Gewichtung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of courseItems(); track item.id) {
+                        <tr class="grade-row" [class.grade-row--category]="isCategory(item)"
+                            [class.grade-row--course]="isCourseTotal(item)">
+                            <td [style.paddingLeft]="getItemIndent(item)">
+                                {{ item.itemname }}
+                            </td>
+                            <td class="grade-row__value">{{ item.gradeformatted }}</td>
+                            <td class="grade-row__value">{{ item.percentageformatted }}</td>
+                            <td class="grade-row__value">
+                                @if (item.weight !== null) {
+                                {{ item.weight | number:'1.1-1' }}%
+                                } @else {
+                                -
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+            </div>
+            }
+        </div>
+        }
+    </div>
+    }
+</div>

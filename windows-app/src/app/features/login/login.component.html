@@ -1,0 +1,90 @@
+<div class="login-page">
+    <!-- Titlebar (window controls on login screen too) -->
+    <app-titlebar siteName="Moodle Desktop" [isDark]="isDark()" (toggleThemeClick)="toggleTheme()" />
+
+    <div class="login-page__content">
+        <div class="login-card">
+            <!-- Back button -->
+            @if (canGoBack()) {
+            <button class="login-card__back" (click)="goBack()" type="button" aria-label="Zurück">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path d="M12.35 15.35a.5.5 0 01-.7 0l-5-5a.5.5 0 010-.7l5-5a.5.5 0 11.7.7L7.71 10l4.64 4.65a.5.5 0 010 .7z" />
+                </svg>
+                <span>Zurück</span>
+            </button>
+            }
+
+            <!-- Logo -->
+            <div class="login-card__header">
+                <div class="login-card__logo">
+                    <svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+                        <circle cx="24" cy="24" r="22" fill="#f57c00" />
+                        <path
+                            d="M24 8a16 16 0 100 32 16 16 0 000-32zm-1.5 27.9C17.3 35.4 14 31.6 14 27c0-.93.12-1.83.32-2.7L21 31v1.5c0 1.66 1.34 3 3 3v1.4zm10.35-3.8c-.39-1.22-1.5-2.1-2.85-2.1h-1.5v-4.5c0-.83-.67-1.5-1.5-1.5H18v-3h3c.83 0 1.5-.67 1.5-1.5V18h3c1.66 0 3-1.34 3-3v-.62a14.1 14.1 0 017.5 11.12c0 3.12-1.2 5.96-3.15 8.1z"
+                            fill="white" />
+                    </svg>
+                </div>
+                <h1 class="login-card__title">Moodle Desktop</h1>
+                <p class="login-card__subtitle">Melde dich bei deiner Moodle-Plattform an</p>
+            </div>
+
+            <!-- Error -->
+            @if (error()) {
+            <div class="login-card__error" role="alert">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M10 2a8 8 0 100 16 8 8 0 000-16zM9.25 6a.75.75 0 011.5 0v4.5a.75.75 0 01-1.5 0V6zM10 14a1 1 0 100-2 1 1 0 000 2z" />
+                </svg>
+                <span>{{ error() }}</span>
+            </div>
+            }
+
+            <!-- Form -->
+            <form class="login-card__form" (ngSubmit)="login()">
+                <div class="login-card__field">
+                    <label for="siteUrl">Moodle-URL</label>
+                    <input id="siteUrl" class="input" type="url" placeholder="https://schule.moodle.com" [ngModel]="siteUrl()"
+                        (ngModelChange)="siteUrl.set($event)" name="siteUrl" autocomplete="url" required />
+                </div>
+
+                <div class="login-card__field">
+                    <label for="username">Benutzername</label>
+                    <input id="username" class="input" type="text" placeholder="Benutzername eingeben" [ngModel]="username()"
+                        (ngModelChange)="username.set($event)" name="username" autocomplete="username" required />
+                </div>
+
+                <div class="login-card__field">
+                    <label for="password">Passwort</label>
+                    <div class="login-card__password-wrapper">
+                        <input id="password" class="input" [type]="showPassword() ? 'text' : 'password'" placeholder="Passwort eingeben"
+                            [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" autocomplete="current-password"
+                            required />
+                        <button type="button" class="login-card__password-toggle" (click)="togglePassword()"
+                            [attr.aria-label]="showPassword() ? 'Passwort verbergen' : 'Passwort anzeigen'">
+                            @if (showPassword()) {
+                            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M2.85 2.15a.5.5 0 10-.7.7l3.5 3.5a8.4 8.4 0 00-3.53 3.4.5.5 0 000 .5A8.35 8.35 0 0010 14.5c1.63 0 3.14-.5 4.4-1.35l3.45 3.45a.5.5 0 00.7-.7l-15.7-15.7zM10 13.5a7.35 7.35 0 01-6.88-4.25 7.4 7.4 0 013.22-3.08l1.85 1.85a3 3 0 004.04 4.04l1.37 1.37A6.5 6.5 0 0110 13.5z" />
+                            </svg>
+                            } @else {
+                            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M10 5.5A8.35 8.35 0 0118.12 9.75a.5.5 0 010 .5A8.35 8.35 0 0110 14.5a8.35 8.35 0 01-8.12-4.25.5.5 0 010-.5A8.35 8.35 0 0110 5.5zM10 13a3 3 0 100-6 3 3 0 000 6z" />
+                            </svg>
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-primary login-card__submit" type="submit" [disabled]="loading()">
+                    @if (loading()) {
+                    <span class="login-card__spinner"></span>
+                    Verbinde…
+                    } @else {
+                    Anmelden
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

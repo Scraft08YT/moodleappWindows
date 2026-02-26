@@ -1,0 +1,478 @@
+<div class="activity-page">
+    <!-- Back navigation -->
+    <a class="activity-page__back" [routerLink]="'/courses/' + courseId()">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+            <path
+                d="M12.35 4.15a.5.5 0 010 .7L7.71 9.5H16.5a.5.5 0 010 1H7.71l4.64 4.65a.5.5 0 01-.7.7l-5.5-5.5a.5.5 0 010-.7l5.5-5.5a.5.5 0 01.7 0z" />
+        </svg>
+        Zurück zum Kurs
+    </a>
+
+    <h1 class="activity-page__title">{{ moduleName() }}</h1>
+
+    @if (loading()) {
+    <div class="card activity-page__skeleton">
+        <div class="skeleton" style="height: 24px; width: 60%;"></div>
+        <div class="skeleton" style="height: 16px; width: 90%; margin-top: 12px;"></div>
+        <div class="skeleton" style="height: 100px; width: 100%; margin-top: 12px;"></div>
+    </div>
+    } @else if (error()) {
+    <div class="card activity-page__error">
+        <p>{{ error() }}</p>
+    </div>
+    } @else {
+
+    <!-- ================== FORUM ================== -->
+    @if (modname() === 'forum') {
+    <div class="forum-view">
+        @if (forum()?.intro) {
+        <div class="card forum-intro" [innerHTML]="forum()!.intro"></div>
+        }
+
+        @if (selectedDiscussion() === null) {
+        <!-- Discussion List -->
+        <div class="forum-actions">
+            <button class="btn-primary" (click)="toggleNewDiscussion()">
+                @if (showNewDiscussion()) { Abbrechen } @else { Neues Thema }
+            </button>
+        </div>
+
+        @if (showNewDiscussion()) {
+        <div class="card new-discussion">
+            <h3>Neues Thema erstellen</h3>
+            <input class="form-input" placeholder="Betreff" [ngModel]="newDiscSubject()" (ngModelChange)="newDiscSubject.set($event)" />
+            <textarea class="form-input form-textarea" placeholder="Nachricht" rows="4" [ngModel]="newDiscMessage()"
+                (ngModelChange)="newDiscMessage.set($event)"></textarea>
+            <button class="btn-primary" (click)="createDiscussion()" [disabled]="!newDiscSubject() || !newDiscMessage()">Erstellen</button>
+        </div>
+        }
+
+        <div class="discussion-list">
+            @for (disc of discussions(); track disc.id) {
+            <button class="card discussion-item" (click)="openDiscussion(disc.id)">
+                <div class="discussion-item__avatar">
+                    @if (disc.userpictureurl) {
+                    <img [src]="disc.userpictureurl" [alt]="disc.userfullname" />
+                    }
+                </div>
+                <div class="discussion-item__info">
+                    <span class="discussion-item__name">{{ disc.name }}</span>
+                    <span class="discussion-item__meta text-muted">
+                        {{ disc.userfullname }} · {{ formatTimestamp(disc.timemodified) | date:'dd.MM.yy HH:mm' }}
+                        · {{ disc.numreplies }} Antworten
+                    </span>
+                </div>
+                <svg class="discussion-item__chevron" viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                    <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                </svg>
+            </button>
+            } @empty {
+            <p class="text-muted" style="padding: 16px;">Keine Diskussionen vorhanden.</p>
+            }
+        </div>
+        } @else {
+        <!-- Post View -->
+        <button class="activity-page__back" (click)="backToDiscussions()">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                <path
+                    d="M12.35 4.15a.5.5 0 010 .7L7.71 9.5H16.5a.5.5 0 010 1H7.71l4.64 4.65a.5.5 0 01-.7.7l-5.5-5.5a.5.5 0 010-.7l5.5-5.5a.5.5 0 01.7 0z" />
+            </svg>
+            Zurück zur Übersicht
+        </button>
+
+        @if (postsLoading()) {
+        <div class="card">
+            <div class="skeleton" style="height: 60px;"></div>
+        </div>
+        } @else {
+        <div class="post-list">
+            @for (post of posts(); track post.id) {
+            <ng-container *ngTemplateOutlet="postTpl; context: { $implicit: post, depth: 0 }"></ng-container>
+            }
+        </div>
+        }
+        }
+    </div>
+    }
+
+    <!-- ================== ASSIGNMENT ================== -->
+    @if (modname() === 'assign') {
+    <div class="assign-view">
+        @if (assignment(); as a) {
+
+        <!-- Hero header with status badge -->
+        <div class="assign-hero" [style.borderLeftColor]="getSubmissionStatusColor()">
+            <div class="assign-hero__top">
+                <span class="assign-badge" [style.background]="getSubmissionStatusColor()">
+                    {{ getSubmissionStatusIcon() }} {{ getSubmissionStatusText() }}
+                </span>
+                @if (isOverdue()) {
+                <span class="assign-badge assign-badge--overdue">⏰ Verspätet</span>
+                }
+            </div>
+            @if (a.intro) {
+            <div class="assign-hero__intro" [innerHTML]="a.intro"></div>
+            }
+        </div>
+
+        <!-- Timeline / Dates -->
+        <div class="card assign-timeline">
+            <h3 class="assign-section-title">📅 Zeitplan</h3>
+            <div class="assign-timeline__items">
+                @if (a.allowsubmissionsfromdate) {
+                <div class="assign-timeline__item">
+                    <div class="assign-timeline__dot assign-timeline__dot--start"></div>
+                    <div class="assign-timeline__content">
+                        <span class="assign-timeline__label">Abgabe möglich ab</span>
+                        <span class="assign-timeline__value">{{ formatTimestamp(a.allowsubmissionsfromdate) | date:'dd.MM.yyyy HH:mm'
+                            }}</span>
+                    </div>
+                </div>
+                }
+                @if (a.duedate) {
+                <div class="assign-timeline__item" [class.assign-timeline__item--warn]="isOverdue()">
+                    <div class="assign-timeline__dot" [class.assign-timeline__dot--overdue]="isOverdue()"
+                        [class.assign-timeline__dot--due]="!isOverdue()"></div>
+                    <div class="assign-timeline__content">
+                        <span class="assign-timeline__label">Fälligkeitsdatum</span>
+                        <span class="assign-timeline__value">{{ formatTimestamp(a.duedate) | date:'dd.MM.yyyy HH:mm' }}</span>
+                        @if (timeRemaining(); as tr) {
+                        <span class="assign-timeline__remaining" [class.assign-timeline__remaining--warn]="isOverdue()">{{ tr }}</span>
+                        }
+                    </div>
+                </div>
+                }
+                @if (a.cutoffdate) {
+                <div class="assign-timeline__item">
+                    <div class="assign-timeline__dot assign-timeline__dot--end"></div>
+                    <div class="assign-timeline__content">
+                        <span class="assign-timeline__label">Letzte Abgabemöglichkeit</span>
+                        <span class="assign-timeline__value">{{ formatTimestamp(a.cutoffdate) | date:'dd.MM.yyyy HH:mm' }}</span>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Submission Status Card -->
+        <div class="card assign-status" [style.borderLeftColor]="getSubmissionStatusColor()">
+            <h3 class="assign-section-title">📊 Abgabestatus</h3>
+            <div class="assign-status__table">
+                <div class="assign-status__row">
+                    <span class="assign-status__label">Abgabestatus</span>
+                    <span class="assign-status__value" [style.color]="getSubmissionStatusColor()">
+                        {{ getSubmissionStatusIcon() }} {{ getSubmissionStatusText() }}
+                    </span>
+                </div>
+                <div class="assign-status__row">
+                    <span class="assign-status__label">Bewertungsstatus</span>
+                    <span class="assign-status__value">{{ getGradingStatusText() }}</span>
+                </div>
+                @if (a.duedate) {
+                <div class="assign-status__row">
+                    <span class="assign-status__label">Fällig am</span>
+                    <span class="assign-status__value">{{ formatTimestamp(a.duedate) | date:'dd.MM.yyyy HH:mm' }}</span>
+                </div>
+                }
+                @if (submissionStatus()?.lastattempt?.submission?.timemodified; as tm) {
+                <div class="assign-status__row">
+                    <span class="assign-status__label">Zuletzt geändert</span>
+                    <span class="assign-status__value">{{ formatTimestamp(tm) | date:'dd.MM.yyyy HH:mm' }}</span>
+                </div>
+                }
+            </div>
+
+            <!-- Existing file submissions -->
+            @if (submissionFiles().length) {
+            <div class="assign-files">
+                <h4 class="assign-files__title">📎 Abgegebene Dateien</h4>
+                @for (file of submissionFiles(); track file.filename) {
+                <div class="assign-files__item">
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="var(--accent)">
+                        <path
+                            d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.41a1 1 0 00-.3-.7l-3.41-3.42A1 1 0 0011.59 3H6zm0 1h5v3a1 1 0 001 1h3v9a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                    </svg>
+                    <span class="assign-files__name">{{ file.filename }}</span>
+                    @if (file.filesize) {
+                    <span class="assign-files__size text-muted">{{ formatFileSize(file.filesize) }}</span>
+                    }
+                </div>
+                }
+            </div>
+            }
+        </div>
+
+        <!-- Grade / Feedback -->
+        @if (submissionStatus()?.feedback?.grade; as g) {
+        <div class="card assign-grade">
+            <h3 class="assign-section-title">🎓 Bewertung</h3>
+            <div class="assign-grade__display">
+                <span class="assign-grade__value">{{ g.gradefordisplay }}</span>
+            </div>
+            @if (submissionStatus()?.feedback?.plugins?.length) {
+            <div class="assign-grade__feedback">
+                @for (plugin of submissionStatus()!.feedback!.plugins!; track plugin.type) {
+                @if (plugin.editorfields?.[0]?.text; as feedbackText) {
+                <div class="assign-grade__comment" [innerHTML]="feedbackText"></div>
+                }
+                }
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Submission Area -->
+        @if (!a.nosubmissions && canSubmit()) {
+        <div class="card assign-submit">
+            <!-- Toggle button -->
+            @if (!showSubmissionEditor()) {
+            <button class="assign-submit__toggle" (click)="toggleSubmissionEditor()">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+                    <path d="M10 2.5a.5.5 0 01.5.5v6.5H17a.5.5 0 010 1h-6.5V17a.5.5 0 01-1 0v-6.5H3a.5.5 0 010-1h6.5V3a.5.5 0 01.5-.5z" />
+                </svg>
+                @if (canEdit()) { Abgabe hinzufügen } @else { Abgabe bearbeiten }
+            </button>
+            } @else {
+            <!-- Editor Panel -->
+            <div class="assign-editor">
+                <div class="assign-editor__header">
+                    <h3 class="assign-section-title">✏️ Abgabe bearbeiten</h3>
+                    <button class="btn-subtle" (click)="toggleSubmissionEditor()">✕ Schließen</button>
+                </div>
+
+                <!-- Online text -->
+                @if (hasOnlineText()) {
+                <div class="assign-editor__text">
+                    <label class="assign-editor__label">Onlinetext</label>
+                    <textarea class="form-input form-textarea" rows="10" placeholder="Deine Antwort hier eingeben..."
+                        [ngModel]="submissionText()" (ngModelChange)="submissionText.set($event)"></textarea>
+                </div>
+                }
+
+                <!-- File upload -->
+                @if (hasFileSubmission()) {
+                <div class="assign-editor__files">
+                    <label class="assign-editor__label">
+                        Dateiabgabe
+                        <span class="text-muted">(max. {{ maxFiles() }} Datei{{ maxFiles() > 1 ? 'en' : '' }})</span>
+                    </label>
+
+                    <!-- Upload zone -->
+                    <label class="assign-dropzone">
+                        <input type="file" multiple [attr.accept]="null" (change)="onFilesSelected($event)" hidden />
+                        <svg viewBox="0 0 20 20" width="28" height="28" fill="var(--fg-3)">
+                            <path
+                                d="M10 2a.5.5 0 01.5.5v8.8l2.65-2.65a.5.5 0 01.7.7l-3.5 3.5a.5.5 0 01-.7 0l-3.5-3.5a.5.5 0 01.7-.7l2.65 2.64V2.5A.5.5 0 0110 2z" />
+                            <path
+                                d="M3.5 14a.5.5 0 00-.5.5v1A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-1a.5.5 0 00-1 0v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 00-.5-.5z" />
+                        </svg>
+                        <span>Dateien auswählen oder hierher ziehen</span>
+                    </label>
+
+                    <!-- Pending files list -->
+                    @if (pendingFiles().length) {
+                    <div class="assign-pending">
+                        @for (file of pendingFiles(); track $index) {
+                        <div class="assign-pending__item">
+                            <span class="assign-pending__name">📄 {{ file.name }}</span>
+                            <span class="assign-pending__size text-muted">{{ formatFileSize(file.size) }}</span>
+                            <button class="btn-subtle assign-pending__remove" (click)="removePendingFile($index)"
+                                title="Entfernen">✕</button>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Progress / Messages -->
+                @if (uploadProgress()) {
+                <div class="assign-editor__progress">
+                    <div class="assign-editor__spinner"></div>
+                    {{ uploadProgress() }}
+                </div>
+                }
+
+                <!-- Actions -->
+                <div class="assign-editor__actions">
+                    <button class="btn-secondary" (click)="saveSubmission()" [disabled]="submitBusy()">
+                        @if (submitBusy()) { Speichert... } @else { 💾 Entwurf speichern }
+                    </button>
+                    <button class="btn-primary" (click)="submitAssignment()" [disabled]="submitBusy()">
+                        @if (submitBusy()) { Wird abgegeben... } @else { 📤 Zur Bewertung abgeben }
+                    </button>
+                </div>
+            </div>
+            }
+
+            <!-- Success / Error messages -->
+            @if (submitSuccess()) {
+            <div class="assign-msg assign-msg--success">✅ {{ submitSuccess() }}</div>
+            }
+            @if (submitError()) {
+            <div class="assign-msg assign-msg--error">❌ {{ submitError() }}</div>
+            }
+        </div>
+        }
+        }
+    </div>
+    }
+
+    <!-- ================== PAGE / BOOK ================== -->
+    @if (modname() === 'page' || modname() === 'book') {
+    <div class="page-view card">
+        @if (pageContent()) {
+        <div class="page-content" [innerHTML]="pageContent()"></div>
+        } @else {
+        <p class="text-muted">Kein Inhalt verfügbar.</p>
+        }
+    </div>
+    }
+
+    <!-- ================== URL ================== -->
+    @if (modname() === 'url') {
+    <div class="url-view card">
+        @if (currentModule()?.description) {
+        <div class="url-description" [innerHTML]="currentModule()!.description"></div>
+        }
+        <div class="url-action">
+            <p class="text-muted">Externer Link</p>
+            <button class="btn-primary" (click)="openExternalUrl()">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M11 3.5a.5.5 0 01.5-.5H16a1 1 0 011 1v4.5a.5.5 0 01-1 0V4.7l-6.65 6.65a.5.5 0 01-.7-.7L15.29 4H11.5a.5.5 0 01-.5-.5zM4 5a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-5a.5.5 0 00-1 0v5H4V6h5a.5.5 0 000-1H4z" />
+                </svg>
+                Link öffnen
+            </button>
+        </div>
+    </div>
+    }
+
+    <!-- ================== RESOURCE ================== -->
+    @if (modname() === 'resource') {
+    <div class="resource-view card">
+        @if (currentModule()?.description) {
+        <div class="resource-description" [innerHTML]="currentModule()!.description"></div>
+        }
+        @if (currentModule()?.contents?.length) {
+        <div class="resource-file">
+            <span class="resource-file__name">{{ currentModule()!.contents[0].filename }}</span>
+            <button class="btn-primary" (click)="downloadResource()">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M10 2a.5.5 0 01.5.5v8.8l2.65-2.65a.5.5 0 01.7.7l-3.5 3.5a.5.5 0 01-.7 0l-3.5-3.5a.5.5 0 01.7-.7l2.65 2.64V2.5A.5.5 0 0110 2zM3.5 14a.5.5 0 00-.5.5v1A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-1a.5.5 0 00-1 0v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 00-.5-.5z" />
+                </svg>
+                Herunterladen
+            </button>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- ================== FOLDER ================== -->
+    @if (modname() === 'folder') {
+    <div class="folder-view card">
+        @if (currentModule()?.description) {
+        <div class="folder-description" [innerHTML]="currentModule()!.description"></div>
+        }
+        <div class="folder-files">
+            @for (file of folderFiles(); track file.filename) {
+            <div class="folder-file">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="var(--fg-3)">
+                    <path
+                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.41a1 1 0 00-.3-.7l-3.41-3.42A1 1 0 0011.59 3H6zm0 1h5v3a1 1 0 001 1h3v9a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                </svg>
+                <span class="folder-file__name">{{ file.filename }}</span>
+                <span class="folder-file__size text-muted">{{ formatFileSize(file.filesize) }}</span>
+                <button class="btn-subtle" (click)="downloadFolderFile(file.fileurl, file.filename)" title="Herunterladen">
+                    <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                        <path
+                            d="M10 2a.5.5 0 01.5.5v8.8l2.65-2.65a.5.5 0 01.7.7l-3.5 3.5a.5.5 0 01-.7 0l-3.5-3.5a.5.5 0 01.7-.7l2.65 2.64V2.5A.5.5 0 0110 2zM3.5 14a.5.5 0 00-.5.5v1A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-1a.5.5 0 00-1 0v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 00-.5-.5z" />
+                    </svg>
+                </button>
+            </div>
+            } @empty {
+            <p class="text-muted">Keine Dateien in diesem Ordner.</p>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- ================== GENERIC / LABEL ================== -->
+    @if (modname() === 'label' || !['forum','assign','page','book','url','resource','folder'].includes(modname())) {
+    <div class="generic-view card">
+        @if (currentModule()?.description) {
+        <div class="generic-content" [innerHTML]="currentModule()!.description"></div>
+        } @else {
+        <p class="text-muted">Diese Aktivität kann in der Desktop-App nicht angezeigt werden.</p>
+        <a [href]="currentModule()?.url" target="_blank" class="btn-primary" style="display: inline-flex; gap: 6px; margin-top: 12px;">
+            Im Browser öffnen
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                <path
+                    d="M11 3.5a.5.5 0 01.5-.5H16a1 1 0 011 1v4.5a.5.5 0 01-1 0V4.7l-6.65 6.65a.5.5 0 01-.7-.7L15.29 4H11.5a.5.5 0 01-.5-.5z" />
+            </svg>
+        </a>
+        }
+        @if (currentModule()?.contents?.length) {
+        <div class="generic-files" style="margin-top: 16px;">
+            <h4>Dateien</h4>
+            @for (content of currentModule()!.contents; track content.filename) {
+            <button class="btn-subtle" (click)="downloadFolderFile(content.fileurl, content.filename)">
+                📄 {{ content.filename }}
+            </button>
+            }
+        </div>
+        }
+    </div>
+    }
+
+    }
+</div>
+
+<!-- Post template for recursive rendering -->
+<ng-template #postTpl let-post let-depth="depth">
+    <div class="post card" [style.marginLeft.px]="depth * 24">
+        <div class="post__header">
+            <div class="post__avatar">
+                @if (post.userpictureurl) {
+                <img [src]="post.userpictureurl" [alt]="post.userfullname" />
+                }
+            </div>
+            <div class="post__meta">
+                <span class="post__author">{{ post.userfullname }}</span>
+                <span class="post__time text-muted">{{ formatTimestamp(post.timecreated) | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+        </div>
+        <div class="post__subject">{{ post.subject }}</div>
+        <div class="post__body" [innerHTML]="post.message"></div>
+
+        @if (post.attachments?.length) {
+        <div class="post__attachments">
+            @for (att of post.attachments; track att.filename) {
+            <a class="post__attachment" [href]="att.fileurl" target="_blank">📎 {{ att.filename }}</a>
+            }
+        </div>
+        }
+
+        <div class="post__actions">
+            <button class="btn-subtle" (click)="startReply(post.id)">Antworten</button>
+        </div>
+
+        @if (replyingTo() === post.id) {
+        <div class="post__reply-form">
+            <textarea class="form-input form-textarea" rows="3" placeholder="Deine Antwort..." [ngModel]="replyText()"
+                (ngModelChange)="replyText.set($event)"></textarea>
+            <div class="post__reply-actions">
+                <button class="btn-secondary" (click)="cancelReply()">Abbrechen</button>
+                <button class="btn-primary" (click)="sendReply(post.id)" [disabled]="!replyText()">Senden</button>
+            </div>
+        </div>
+        }
+
+        @if (post.children?.length) {
+        @for (child of post.children; track child.id) {
+        <ng-container *ngTemplateOutlet="postTpl; context: { $implicit: child, depth: depth + 1 }"></ng-container>
+        }
+        }
+    </div>
+</ng-template>

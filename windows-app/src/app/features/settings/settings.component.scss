@@ -1,0 +1,250 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.settings-page {
+    max-width: 700px;
+
+    &__header {
+        margin-bottom: $spacing-xl;
+
+        h1 {
+            font-size: $font-size-display;
+            font-weight: $font-weight-bold;
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-lg;
+    }
+}
+
+.settings-section {
+    padding: $spacing-lg !important;
+
+    h3 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        margin-bottom: $spacing-xs;
+    }
+
+    > .text-muted {
+        font-size: $font-size-sm;
+        margin-bottom: $spacing-base;
+    }
+}
+
+// --- Theme Options ---
+.theme-options {
+    display: flex;
+    gap: $spacing-md;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-base;
+    border: 1px solid var(--stroke-1);
+    border-radius: $radius-md;
+    background: var(--bg-1);
+    cursor: pointer;
+    transition: all $duration-fast $easing-decelerate;
+    font-size: $font-size-base;
+    color: var(--fg-1);
+    min-width: 120px;
+
+    &:hover {
+        background: var(--bg-hover);
+        border-color: var(--fg-3);
+    }
+
+    &--active {
+        border-color: $color-brand-primary;
+        background: rgba($color-brand-primary, 0.06);
+
+        .theme-option__label {
+            color: $color-brand-primary;
+            font-weight: $font-weight-semibold;
+        }
+    }
+
+    &__icon {
+        font-size: 20px;
+    }
+
+    &__label {
+        flex: 1;
+    }
+
+    &__check {
+        color: $color-brand-primary;
+    }
+}
+
+// --- Account Info ---
+.account-info,
+.about-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    &__row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: $spacing-sm 0;
+        border-bottom: 1px solid var(--stroke-2);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__label {
+        font-size: $font-size-sm;
+        color: var(--fg-3);
+    }
+
+    &__value {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+    }
+}
+
+// --- Storage ---
+.storage-actions {
+    margin-top: $spacing-sm;
+}
+
+// --- Danger Button ---
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-lg;
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+    border: 1px solid rgba($color-error, 0.3);
+    border-radius: $radius-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $duration-fast $easing-decelerate;
+
+    &:hover {
+        background: rgba($color-error, 0.18);
+    }
+}
+
+// --- Update Section ---
+.update-section {
+    margin-top: $spacing-lg;
+    padding-top: $spacing-lg;
+    border-top: 1px solid var(--stroke-2);
+}
+
+.update-status {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+    font-size: $font-size-sm;
+
+    &--success { color: $color-success; }
+    &--error { color: $color-error; }
+}
+
+.update-available {
+    margin-top: $spacing-md;
+    padding: $spacing-base !important;
+    border: 1px solid rgba($color-brand-primary, 0.3);
+    border-radius: $radius-lg !important;
+    background: rgba($color-brand-primary, 0.04);
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: $spacing-sm;
+    }
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $color-brand-primary;
+    }
+
+    &__version {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-bold;
+        color: var(--fg-1);
+    }
+
+    &__notes {
+        font-size: $font-size-sm;
+        line-height: 1.5;
+        margin-bottom: $spacing-md;
+    }
+}
+
+.update-progress {
+    margin-top: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    &__bar {
+        height: 6px;
+        background: var(--bg-3);
+        border-radius: $radius-circular;
+        overflow: hidden;
+    }
+
+    &__fill {
+        height: 100%;
+        background: $color-brand-primary;
+        border-radius: $radius-circular;
+        transition: width 0.3s ease;
+    }
+}
+
+// --- Button outline (reuse from global, scoped here for settings) ---
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-base;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    border: 1px solid var(--stroke-1);
+    border-radius: $radius-md;
+    background: transparent;
+    color: var(--fg-2);
+    cursor: pointer;
+    transition: background $duration-fast, color $duration-fast;
+
+    &:hover:not(:disabled) { background: var(--bg-hover); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-left-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+
+    &--sm { width: 14px; height: 14px; border-width: 1.5px; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

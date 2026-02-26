@@ -1,0 +1,133 @@
+<div class="profile-page">
+    @if (loading()) {
+    <div class="profile-page__loading card">
+        <div class="profile-hero">
+            <div class="skeleton profile-hero__avatar-skeleton"></div>
+            <div class="skeleton" style="height: 24px; width: 200px; margin-top: 16px;"></div>
+            <div class="skeleton" style="height: 16px; width: 150px; margin-top: 8px;"></div>
+        </div>
+    </div>
+    } @else if (error()) {
+    <div class="profile-page__error card">
+        <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+            <path d="M24 4a20 20 0 100 40 20 20 0 000-40zm-1 11a1 1 0 112 0v10a1 1 0 11-2 0V15zm1 16a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
+        </svg>
+        <p>{{ error() }}</p>
+    </div>
+    } @else if (profile()) {
+    <!-- Hero Section -->
+    <div class="profile-hero card">
+        <div class="profile-hero__avatar">
+            @if (profile()!.profileimageurl) {
+            <img [src]="profile()!.profileimageurl" [alt]="profile()!.fullname" />
+            } @else {
+            <span class="profile-hero__initials">{{ getInitials(profile()!.fullname) }}</span>
+            }
+        </div>
+        <h1 class="profile-hero__name">{{ profile()!.fullname }}</h1>
+        @if (profile()!.email) {
+        <p class="profile-hero__email text-muted">{{ profile()!.email }}</p>
+        }
+        @if (profile()!.roles.length > 0) {
+        <div class="profile-hero__roles">
+            @for (role of profile()!.roles; track role.roleid) {
+            <span class="profile-hero__role-badge">{{ role.name || role.shortname }}</span>
+            }
+        </div>
+        }
+    </div>
+
+    <!-- Details Section -->
+    <div class="profile-details card">
+        <h2>Details</h2>
+        <div class="profile-details__grid">
+            @if (profile()!.department) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Abteilung</span>
+                <span class="profile-details__value">{{ profile()!.department }}</span>
+            </div>
+            }
+            @if (profile()!.institution) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Institution</span>
+                <span class="profile-details__value">{{ profile()!.institution }}</span>
+            </div>
+            }
+            @if (profile()!.city) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Stadt</span>
+                <span class="profile-details__value">{{ profile()!.city }}</span>
+            </div>
+            }
+            @if (profile()!.country) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Land</span>
+                <span class="profile-details__value">{{ profile()!.country }}</span>
+            </div>
+            }
+            @if (profile()!.url) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Website</span>
+                <a class="profile-details__link" [href]="profile()!.url" target="_blank">{{ profile()!.url }}</a>
+            </div>
+            }
+            @if (profile()!.interests) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Interessen</span>
+                <span class="profile-details__value">{{ profile()!.interests }}</span>
+            </div>
+            }
+            @if (formatTimestamp(profile()!.firstaccess)) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Erster Zugriff</span>
+                <span class="profile-details__value">{{ formatTimestamp(profile()!.firstaccess) | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+            }
+            @if (formatTimestamp(profile()!.lastaccess)) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">Letzter Zugriff</span>
+                <span class="profile-details__value">{{ formatTimestamp(profile()!.lastaccess) | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Custom Fields -->
+    @if (profile()!.customfields.length > 0) {
+    <div class="profile-custom card">
+        <h2>Weitere Informationen</h2>
+        <div class="profile-details__grid">
+            @for (field of profile()!.customfields; track field.shortname) {
+            <div class="profile-details__item">
+                <span class="profile-details__label">{{ field.name }}</span>
+                <span class="profile-details__value" [innerHTML]="field.value"></span>
+            </div>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Description -->
+    @if (profile()!.description) {
+    <div class="profile-description card">
+        <h2>Beschreibung</h2>
+        <div class="profile-description__content" [innerHTML]="profile()!.description"></div>
+    </div>
+    }
+
+    <!-- Enrolled Courses -->
+    @if (profile()!.enrolledcourses.length > 0) {
+    <div class="profile-courses card">
+        <h2>Eingeschriebene Kurse</h2>
+        <div class="profile-courses__list">
+            @for (course of profile()!.enrolledcourses; track course.id) {
+            <a class="profile-courses__item" [routerLink]="'/courses/' + course.id">
+                <span class="profile-courses__name">{{ course.fullname }}</span>
+                <span class="profile-courses__short text-muted">{{ course.shortname }}</span>
+            </a>
+            }
+        </div>
+    </div>
+    }
+    }
+</div>

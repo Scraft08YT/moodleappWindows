@@ -1,0 +1,414 @@
+<div class="course-search">
+    <!-- Back link -->
+    <a class="course-search__back" routerLink="/courses">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+            <path
+                d="M12.35 4.15a.5.5 0 010 .7L7.71 9.5H16.5a.5.5 0 010 1H7.71l4.64 4.65a.5.5 0 01-.7.7l-5.5-5.5a.5.5 0 010-.7l5.5-5.5a.5.5 0 01.7 0z" />
+        </svg>
+        Zurück zu Kurse
+    </a>
+
+    <!-- Header -->
+    <div class="course-search__header">
+        <h1>Kurse suchen & einschreiben</h1>
+        <p class="course-search__subtitle text-muted">Finde und schreibe dich in neue Kurse ein</p>
+    </div>
+
+    <!-- Search bar -->
+    <div class="course-search__bar">
+        <div class="course-search__input-wrap">
+            <svg class="course-search__search-icon" viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+                <path
+                    d="M8.5 3a5.5 5.5 0 014.38 8.82l3.65 3.65a.5.5 0 01-.7.7l-3.65-3.64A5.5 5.5 0 118.5 3zm0 1a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
+            </svg>
+            <input class="course-search__input" type="search" placeholder="Kursname eingeben…" [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)" (input)="onSearchInput()" (keyup.enter)="performSearch()" />
+        </div>
+        <button class="course-search__search-btn" (click)="performSearch()" [disabled]="searching()">
+            @if (searching()) {
+            <span class="spinner spinner--sm"></span>
+            } @else {
+            Suchen
+            }
+        </button>
+    </div>
+
+    <!-- Category Browser (shown when not searching) -->
+    @if (!searched() && !searching()) {
+    <div class="category-browser">
+        <!-- Breadcrumbs -->
+        @if (breadcrumbs().length > 0) {
+        <nav class="category-browser__breadcrumbs">
+            <button class="category-browser__crumb" (click)="navigateToBreadcrumb(-1)">
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path
+                        d="M8.5 2.75a.75.75 0 00-1.22-.58l-5 4.25a.75.75 0 000 1.16l5 4.25A.75.75 0 008.5 11.25V9h2.25A4.25 4.25 0 0115 13.25v1a.75.75 0 001.5 0v-1A5.75 5.75 0 0010.75 7.5H8.5V5.25z" />
+                </svg>
+                Alle Kategorien
+            </button>
+            @for (crumb of breadcrumbs(); track crumb.id; let i = $index; let last = $last) {
+            <svg class="category-browser__separator" viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+            </svg>
+            @if (last) {
+            <span class="category-browser__crumb category-browser__crumb--current">{{ crumb.name }}</span>
+            } @else {
+            <button class="category-browser__crumb" (click)="navigateToBreadcrumb(i)">{{ crumb.name }}</button>
+            }
+            }
+        </nav>
+        }
+
+        <!-- Category loading skeletons -->
+        @if (loadingCategories()) {
+        <div class="category-browser__list">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="category-item card">
+                <div class="category-item__header">
+                    <div class="skeleton" style="height: 18px; width: 50%;"></div>
+                    <div class="skeleton" style="height: 14px; width: 80px;"></div>
+                </div>
+            </div>
+            }
+        </div>
+        } @else if (categories().length > 0) {
+        <div class="category-browser__list">
+            @for (cat of categories(); track cat.id) {
+            <div class="category-item card" [class.category-item--expanded]="isCategoryExpanded(cat.id)">
+                <div class="category-item__header" (click)="openCategory(cat)">
+                    <div class="category-item__info">
+                        <svg class="category-item__icon" viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+                            <path
+                                d="M2 5.5A2.5 2.5 0 014.5 3h3.38a2.5 2.5 0 011.77.73l.85.85c.14.14.33.22.53.22H15.5A2.5 2.5 0 0118 7.3v7.2a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 012 14.5v-9z" />
+                        </svg>
+                        <div class="category-item__text">
+                            <span class="category-item__name">{{ cat.name }}</span>
+                            <span class="category-item__count text-muted">{{ cat.coursecount }} {{ cat.coursecount === 1 ? 'Kurs' : 'Kurse'
+                                }}</span>
+                        </div>
+                    </div>
+                    <svg class="category-item__chevron" viewBox="0 0 12 12" width="14" height="14" fill="currentColor">
+                        <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                    </svg>
+                </div>
+
+                <!-- Expanded course list -->
+                @if (isCategoryExpanded(cat.id)) {
+                <div class="category-item__courses">
+                    @if (isCategoryLoading(cat.id)) {
+                    <div class="category-item__loading">
+                        <span class="spinner spinner--sm"></span>
+                        <span class="text-muted">Kurse werden geladen…</span>
+                    </div>
+                    } @else {
+                    @for (course of getCoursesForCategory(cat.id); track course.id) {
+                    <div class="category-course" (click)="openEnrolDialog(course)">
+                        <div class="category-course__image">
+                            @if (course.courseImage) {
+                            <img [src]="course.courseImage" [alt]="course.fullname" loading="lazy" />
+                            } @else {
+                            <div class="category-course__placeholder" [style.background]="getCourseColor(course)">
+                                <span class="category-course__initials">{{ getCourseInitials(course) }}</span>
+                            </div>
+                            }
+                        </div>
+                        <div class="category-course__info">
+                            <span class="category-course__name">{{ course.fullname }}</span>
+                            @if (course.summary) {
+                            <span class="category-course__summary text-muted">{{ stripHtml(course.summary) }}</span>
+                            }
+                        </div>
+                        @if (isEnrolled(course.id)) {
+                        <span class="category-course__enrolled">
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+                                <path
+                                    d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
+                            </svg>
+                            Eingeschrieben
+                        </span>
+                        } @else {
+                        <button class="btn-primary btn-primary--sm category-course__enrol-btn">Einschreiben</button>
+                        }
+                    </div>
+                    } @empty {
+                    <p class="category-item__empty text-muted">Keine Kurse in dieser Kategorie.</p>
+                    }
+                    }
+                </div>
+                }
+            </div>
+            }
+        </div>
+        } @else {
+        <div class="category-browser__empty">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+                <path
+                    d="M6 12.5A6.5 6.5 0 0112.5 6h7.76a6.5 6.5 0 014.6 1.9l1.7 1.71a2.5 2.5 0 001.77.74H35.5A6.5 6.5 0 0142 16.85V35.5a6.5 6.5 0 01-6.5 6.5h-23A6.5 6.5 0 016 35.5v-23z" />
+            </svg>
+            <p class="text-muted">Keine Kategorien verfügbar.</p>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Results count -->
+    @if (searched() && !searching()) {
+    <div class="course-search__status">
+        <span class="text-muted">
+            {{ totalResults() }} {{ totalResults() === 1 ? 'Kurs' : 'Kurse' }} gefunden
+        </span>
+    </div>
+    }
+
+    <!-- Loading -->
+    @if (searching()) {
+    <div class="course-search__results">
+        @for (i of [1, 2, 3, 4]; track i) {
+        <div class="result-card card">
+            <div class="result-card__image">
+                <div class="skeleton" style="width: 100%; height: 100%;"></div>
+            </div>
+            <div class="result-card__body">
+                <div class="skeleton" style="height: 18px; width: 70%; margin-bottom: 8px;"></div>
+                <div class="skeleton" style="height: 14px; width: 45%; margin-bottom: 12px;"></div>
+                <div class="skeleton" style="height: 12px; width: 90%;"></div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else if (searched()) {
+    <!-- Results grid -->
+    <div class="course-search__results">
+        @for (course of searchResults(); track course.id) {
+        <div class="result-card card" [class.result-card--enrolled]="isEnrolled(course.id)">
+            <div class="result-card__image">
+                @if (course.courseImage) {
+                <img [src]="course.courseImage" [alt]="course.fullname" loading="lazy" />
+                } @else {
+                <div class="result-card__placeholder" [style.background]="getCourseColor(course)">
+                    <span class="result-card__initials">{{ getCourseInitials(course) }}</span>
+                </div>
+                }
+                @if (isEnrolled(course.id)) {
+                <span class="result-card__enrolled-badge">
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+                        <path
+                            d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
+                    </svg>
+                    Eingeschrieben
+                </span>
+                }
+            </div>
+            <div class="result-card__body">
+                <h3 class="result-card__title">{{ course.fullname }}</h3>
+                @if (course.categoryname) {
+                <span class="result-card__category text-muted">{{ course.categoryname }}</span>
+                }
+                @if (course.summary) {
+                <p class="result-card__summary text-muted">{{ stripHtml(course.summary) }}</p>
+                }
+                <div class="result-card__meta">
+                    @if (course.enrolledusercount > 0) {
+                    <span class="result-card__meta-item">
+                        <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                            <path
+                                d="M10 2a4 4 0 100 8 4 4 0 000-8zm-5.28 9A3.72 3.72 0 001 14.72V16a2 2 0 002 2h14a2 2 0 002-2v-1.28A3.72 3.72 0 0015.28 11H4.72z" />
+                        </svg>
+                        {{ course.enrolledusercount }} Teilnehmer
+                    </span>
+                    }
+                    @if (course.contacts.length > 0) {
+                    <span class="result-card__meta-item">
+                        <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                            <path
+                                d="M10 2a4 4 0 100 8 4 4 0 000-8zm-5.28 9A3.72 3.72 0 001 14.72V16a2 2 0 002 2h14a2 2 0 002-2v-1.28A3.72 3.72 0 0015.28 11H4.72z" />
+                        </svg>
+                        {{ course.contacts[0] }}
+                    </span>
+                    }
+                </div>
+                <div class="result-card__actions">
+                    @if (isEnrolled(course.id)) {
+                    <button class="btn-primary btn-primary--sm" (click)="goToCourse(course.id)">
+                        Zum Kurs
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                            <path
+                                d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                        </svg>
+                    </button>
+                    } @else {
+                    <button class="btn-primary btn-primary--sm" (click)="openEnrolDialog(course)">
+                        <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                            <path
+                                d="M10 2.5a.5.5 0 01.5.5v6.5H17a.5.5 0 010 1h-6.5V17a.5.5 0 01-1 0v-6.5H3a.5.5 0 010-1h6.5V3a.5.5 0 01.5-.5z" />
+                        </svg>
+                        Einschreiben
+                    </button>
+                    }
+                </div>
+            </div>
+        </div>
+        } @empty {
+        <div class="course-search__empty">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+                <path
+                    d="M21 7a14 14 0 1010.45 23.37l7.25 7.25a1.5 1.5 0 002.13-2.12l-7.26-7.26A14 14 0 0021 7zm-11 14a11 11 0 1122 0 11 11 0 01-22 0z" />
+            </svg>
+            <p class="text-muted">Keine Kurse gefunden. Versuche einen anderen Suchbegriff.</p>
+        </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalResults() > 20) {
+    <div class="course-search__pagination">
+        <button class="btn-outline btn-outline--sm" [disabled]="!hasPrevPage" (click)="prevPage()">
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                <path d="M7.85 2.15a.5.5 0 010 .7L4.71 6l3.14 3.15a.5.5 0 01-.7.7l-3.5-3.5a.5.5 0 010-.7l3.5-3.5a.5.5 0 01.7 0z" />
+            </svg>
+            Zurück
+        </button>
+        <span class="text-muted">Seite {{ currentPage() + 1 }} von {{ totalPages() }}</span>
+        <button class="btn-outline btn-outline--sm" [disabled]="!hasMorePages" (click)="nextPage()">
+            Weiter
+            <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+            </svg>
+        </button>
+    </div>
+    }
+    }
+</div>
+
+<!-- Enrolment Dialog Overlay -->
+@if (selectedCourse(); as course) {
+<div class="enrol-overlay" (click)="closeEnrolDialog()">
+    <div class="enrol-dialog card" (click)="$event.stopPropagation()">
+        @if (enrolSuccess()) {
+        <!-- Success state -->
+        <div class="enrol-dialog__success">
+            <div class="enrol-dialog__success-icon">
+                <svg viewBox="0 0 48 48" width="48" height="48" fill="currentColor">
+                    <path
+                        d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm10.3 15.3l-12 12a1 1 0 01-1.42 0l-6-6a1 1 0 011.42-1.42L21.59 29.17l11.3-11.3a1 1 0 011.42 1.42z" />
+                </svg>
+            </div>
+            <h2>Erfolgreich eingeschrieben!</h2>
+            <p class="text-muted">Du bist jetzt in <strong>{{ course.fullname }}</strong> eingeschrieben.</p>
+            <div class="enrol-dialog__actions">
+                <button class="btn-primary" (click)="goToCourse(course.id)">
+                    Zum Kurs
+                    <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor">
+                        <path d="M4.15 2.15a.5.5 0 01.7 0l3.5 3.5a.5.5 0 010 .7l-3.5 3.5a.5.5 0 01-.7-.7L7.29 6 4.15 2.85a.5.5 0 010-.7z" />
+                    </svg>
+                </button>
+                <button class="btn-secondary" (click)="closeEnrolDialog()">Weiter suchen</button>
+            </div>
+        </div>
+        } @else {
+        <!-- Enrol form -->
+        <div class="enrol-dialog__header">
+            <h2>In Kurs einschreiben</h2>
+            <button class="enrol-dialog__close" (click)="closeEnrolDialog()" aria-label="Schliessen">
+                <svg viewBox="0 0 12 12" width="14" height="14" fill="currentColor">
+                    <path
+                        d="M1.35 1.35a.5.5 0 01.7 0L6 5.29l3.95-3.94a.5.5 0 01.7.7L6.71 6l3.94 3.95a.5.5 0 01-.7.7L6 6.71l-3.95 3.94a.5.5 0 01-.7-.7L5.29 6 1.35 2.05a.5.5 0 010-.7z" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="enrol-dialog__course">
+            <div class="enrol-dialog__course-avatar" [style.background]="getCourseColor(course)">
+                {{ getCourseInitials(course) }}
+            </div>
+            <div class="enrol-dialog__course-info">
+                <strong>{{ course.fullname }}</strong>
+                @if (course.categoryname) {
+                <span class="text-muted">{{ course.categoryname }}</span>
+                }
+            </div>
+        </div>
+
+        @if (loadingMethods()) {
+        <div class="enrol-dialog__loading">
+            <span class="spinner"></span>
+            <span class="text-muted">Einschreibemethoden werden geladen…</span>
+        </div>
+        } @else {
+        <!-- Enrolment methods list -->
+        <div class="enrol-dialog__methods">
+            @for (method of enrolMethods(); track method.id) {
+            <div class="enrol-dialog__method" [class.enrol-dialog__method--self]="method.type === 'self'">
+                <div class="enrol-dialog__method-icon">
+                    @if (method.type === 'self') {
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                        <path
+                            d="M10 2a4 4 0 100 8 4 4 0 000-8zM4.72 11A3.72 3.72 0 001 14.72V16a2 2 0 002 2h14a2 2 0 002-2v-1.28A3.72 3.72 0 0015.28 11H4.72z" />
+                    </svg>
+                    } @else if (method.type === 'guest') {
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                        <path
+                            d="M10 3a3 3 0 100 6 3 3 0 000-6zM5.49 10A3.49 3.49 0 002 13.49V15a2 2 0 002 2h12a2 2 0 002-2v-1.51A3.49 3.49 0 0014.51 10H5.5z" />
+                    </svg>
+                    } @else {
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                        <path d="M10 2a.5.5 0 01.5.5v6.5H17a.5.5 0 010 1h-6.5V17a.5.5 0 01-1 0v-6.5H3a.5.5 0 010-1h6.5V3a.5.5 0 01.5-.5z" />
+                    </svg>
+                    }
+                </div>
+                <div class="enrol-dialog__method-info">
+                    <span class="enrol-dialog__method-name">{{ method.name }}</span>
+                    <span class="enrol-dialog__method-type text-muted">{{ getEnrolMethodLabel(method.type) }}</span>
+                </div>
+            </div>
+            } @empty {
+            <p class="text-muted">Keine Einschreibemethoden verfügbar. Kontaktiere den Kursleiter.</p>
+            }
+        </div>
+
+        @if (hasSelfEnrolment()) {
+        <!-- Password field -->
+        @if (showPasswordField()) {
+        <div class="enrol-dialog__password">
+            <label class="enrol-dialog__label" for="enrolPassword">Einschreibeschlüssel (optional)</label>
+            <input class="enrol-dialog__password-input input" id="enrolPassword" type="password" placeholder="Passwort eingeben…"
+                [ngModel]="enrolPassword()" (ngModelChange)="enrolPassword.set($event)" (keyup.enter)="enrol()" />
+        </div>
+        }
+
+        <!-- Error -->
+        @if (enrolError()) {
+        <div class="enrol-dialog__error">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                <path
+                    d="M10 2a8 8 0 100 16 8 8 0 000-16zm-.75 4.75a.75.75 0 011.5 0v4.5a.75.75 0 01-1.5 0v-4.5zM10 14a1 1 0 100-2 1 1 0 000 2z" />
+            </svg>
+            {{ enrolError() }}
+        </div>
+        }
+
+        <!-- Actions -->
+        <div class="enrol-dialog__actions">
+            <button class="btn-primary" (click)="enrol()" [disabled]="enrolling()">
+                @if (enrolling()) {
+                <span class="spinner spinner--sm"></span>
+                Wird eingeschrieben…
+                } @else {
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path d="M10 2.5a.5.5 0 01.5.5v6.5H17a.5.5 0 010 1h-6.5V17a.5.5 0 01-1 0v-6.5H3a.5.5 0 010-1h6.5V3a.5.5 0 01.5-.5z" />
+                </svg>
+                Jetzt einschreiben
+                }
+            </button>
+            <button class="btn-secondary" (click)="closeEnrolDialog()">Abbrechen</button>
+        </div>
+        } @else {
+        <div class="enrol-dialog__actions">
+            <button class="btn-secondary" (click)="closeEnrolDialog()">Schliessen</button>
+        </div>
+        }
+        }
+        }
+    </div>
+</div>
+}

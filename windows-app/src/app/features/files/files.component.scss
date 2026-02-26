@@ -1,0 +1,184 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.files-page {
+    &__header {
+        margin-bottom: $spacing-xl;
+
+        h1 {
+            font-size: $font-size-display;
+            font-weight: $font-weight-bold;
+        }
+    }
+}
+
+// --- Active Downloads ---
+.downloads-section {
+    margin-bottom: $spacing-xl;
+
+    h3 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        margin-bottom: $spacing-md;
+    }
+}
+
+.downloads-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.download-item {
+    padding: $spacing-base !important;
+
+    &__info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: $spacing-sm;
+    }
+
+    &__name {
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-sm;
+        @include text-ellipsis;
+    }
+
+    &__progress {
+        font-size: $font-size-xs;
+        flex-shrink: 0;
+    }
+
+    &__bar {
+        height: 4px;
+        background: var(--bg-hover);
+        border-radius: $radius-circular;
+        overflow: hidden;
+    }
+
+    &__bar-fill {
+        height: 100%;
+        background: $color-brand-primary;
+        border-radius: $radius-circular;
+        transition: width $duration-normal $easing-decelerate;
+    }
+}
+
+// --- Files Section ---
+.files-section {
+    h3 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        margin-bottom: $spacing-md;
+    }
+}
+
+.files-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-base !important;
+    cursor: pointer;
+    transition: background $duration-fast $easing-decelerate;
+
+    &:hover {
+        background: var(--bg-hover);
+
+        .file-item__download {
+            opacity: 1;
+        }
+    }
+
+    &__icon {
+        font-size: 28px;
+        flex-shrink: 0;
+        width: 40px;
+        text-align: center;
+    }
+
+    &__info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__name {
+        display: block;
+        font-weight: $font-weight-semibold;
+        @include text-ellipsis;
+    }
+
+    &__meta {
+        display: flex;
+        gap: $spacing-xs;
+        font-size: $font-size-xs;
+        margin-top: $spacing-xxs;
+    }
+
+    &__download {
+        opacity: 0;
+        transition: opacity $duration-fast;
+        flex-shrink: 0;
+    }
+}
+
+.files-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0 !important;
+    color: var(--fg-3);
+
+    svg {
+        margin-bottom: $spacing-lg;
+        opacity: 0.4;
+    }
+
+    p {
+        font-size: $font-size-lg;
+    }
+}
+
+// --- Skeleton ---
+.files-loading {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.skeleton-file {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-base !important;
+
+    &__text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-xs;
+    }
+}
+
+.skeleton {
+    border-radius: $radius-sm;
+    background: var(--bg-hover);
+    animation: shimmer 1.5s infinite;
+
+    &--icon {
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-md;
+        flex-shrink: 0;
+    }
+
+    &--sm { height: 12px; width: 30%; }
+    &--md { height: 14px; width: 60%; }
+}

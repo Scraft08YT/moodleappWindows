@@ -1,0 +1,28 @@
+<div class="shell">
+    <!-- Custom Titlebar -->
+    <app-titlebar [siteName]="siteName()" [isDark]="isDark()" (toggleThemeClick)="toggleTheme()" />
+
+    <div class="shell__body">
+        <!-- Sidebar Navigation -->
+        <app-sidebar [collapsed]="sidebarCollapsed()" [userFullName]="userFullName()" [userAvatar]="userAvatar()"
+            [unreadMessages]="unreadMessages()" [unreadNotifications]="unreadNotifications()" [storedAccounts]="storedAccounts()"
+            [activeAccountId]="activeAccountId()" (toggleClick)="toggleSidebar()" (logoutClick)="logout()"
+            (switchAccountClick)="switchAccount($event)" (removeAccountClick)="removeAccount($event)" (addAccountClick)="addAccount()" />
+
+        <!-- Main Content -->
+        <main class="shell__content scroll-area">
+            @if (isOffline()) {
+            <div class="shell__offline-bar">
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path
+                        d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 001.06-1.06L3.28 2.22zM10 5c1.93 0 3.68.78 4.95 2.05l-.01.01-1.42 1.42A5 5 0 0010 7a5 5 0 00-2.83.88L5.73 6.44A7 7 0 0110 5zm5.66.34A9 9 0 0010 3a9 9 0 00-5.66 2.34L5.76 6.76A7 7 0 0110 5a7 7 0 014.24 1.76l1.42-1.42zM10 9c.83 0 1.58.34 2.12.88l-1.41 1.41a1 1 0 00-1.42 0L7.88 9.88A3 3 0 0110 9zm0 4a1 1 0 100 2 1 1 0 000-2z" />
+                </svg>
+                Offline-Modus – Daten werden aus dem Cache geladen
+            </div>
+            }
+            <div class="shell__content-inner page-content">
+                <router-outlet />
+            </div>
+        </main>
+    </div>
+</div>

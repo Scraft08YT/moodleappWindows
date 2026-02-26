@@ -1,0 +1,76 @@
+@use 'variables' as *;
+
+.titlebar {
+    display: flex;
+    align-items: center;
+    height: $titlebar-height;
+    background: var(--sidebar-bg);
+    user-select: none;
+    flex-shrink: 0;
+    padding-left: $spacing-base;
+    border-bottom: 1px solid var(--stroke-2);
+}
+
+.titlebar__left {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+}
+
+.titlebar__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.titlebar__title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--fg-2);
+    letter-spacing: 0.02em;
+}
+
+.titlebar__drag {
+    flex: 1;
+    height: 100%;
+}
+
+.titlebar__controls {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+}
+
+.titlebar__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--fg-2);
+    cursor: pointer;
+    transition: background $duration-fast $easing-decelerate;
+
+    &:hover {
+        background: var(--bg-hover);
+    }
+
+    &:active {
+        background: var(--bg-active);
+    }
+
+    &--close:hover {
+        background: #c42b1c;
+        color: #ffffff;
+    }
+
+    &--close:active {
+        background: #b22a1c;
+        color: #ffffff;
+    }
+}

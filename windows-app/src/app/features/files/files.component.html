@@ -1,0 +1,74 @@
+<div class="files-page">
+    <header class="files-page__header">
+        <h1>Dateien</h1>
+    </header>
+
+    <!-- Active Downloads -->
+    @if (activeDownloads().length > 0) {
+    <section class="downloads-section">
+        <h3>Aktive Downloads</h3>
+        <div class="downloads-list">
+            @for (download of activeDownloads(); track trackDownload($index, download)) {
+            <div class="download-item card">
+                <div class="download-item__info">
+                    <span class="download-item__name">{{ download.filename }}</span>
+                    <span class="download-item__progress text-muted">{{ download.progress | number: '1.0-0' }}%</span>
+                </div>
+                <div class="download-item__bar">
+                    <div class="download-item__bar-fill" [style.width.%]="download.progress"></div>
+                </div>
+            </div>
+            }
+        </div>
+    </section>
+    }
+
+    <!-- Private Files -->
+    <section class="files-section">
+        <h3>Meine privaten Dateien</h3>
+
+        @if (loading()) {
+        <div class="files-loading">
+            @for (i of [1, 2, 3, 4]; track i) {
+            <div class="skeleton-file card">
+                <div class="skeleton skeleton--icon"></div>
+                <div class="skeleton-file__text">
+                    <div class="skeleton skeleton--md"></div>
+                    <div class="skeleton skeleton--sm"></div>
+                </div>
+            </div>
+            }
+        </div>
+        } @else if (files().length === 0) {
+        <div class="files-empty card">
+            <svg viewBox="0 0 48 48" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M6 10a2 2 0 012-2h10l4 4h18a2 2 0 012 2v24a2 2 0 01-2 2H8a2 2 0 01-2-2V10z" />
+                <path d="M18 26h12M24 20v12" />
+            </svg>
+            <p>Keine privaten Dateien vorhanden.</p>
+        </div>
+        } @else {
+        <div class="files-list">
+            @for (file of files(); track file.fileurl) {
+            <div class="file-item card" (click)="downloadFile(file)">
+                <span class="file-item__icon">{{ getFileIcon(file) }}</span>
+                <div class="file-item__info">
+                    <span class="file-item__name">{{ file.filename }}</span>
+                    <div class="file-item__meta text-muted">
+                        <span>{{ formatSize(file.filesize) }}</span>
+                        <span>•</span>
+                        <span>{{ formatDate(file.timemodified) }}</span>
+                    </div>
+                </div>
+                <button class="btn-subtle file-item__download" title="Herunterladen">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+                        <path
+                            d="M8 1v9.293l2.646-2.647a.5.5 0 01.708.708l-3.5 3.5a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 01.708-.708L7 10.293V1a.5.5 0 011 0zM2 14h12a.5.5 0 010 1H2a.5.5 0 010-1z" />
+                    </svg>
+                </button>
+            </div>
+            }
+        </div>
+        }
+    </section>
+</div>

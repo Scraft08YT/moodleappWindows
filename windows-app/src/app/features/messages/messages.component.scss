@@ -1,0 +1,487 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.messages-page {
+    display: flex;
+    height: calc(100vh - #{$titlebar-height} - #{$spacing-xxl} * 2);
+    margin: -#{$spacing-xxl} -#{$spacing-xl};
+    background: var(--bg-1);
+    overflow: hidden;
+
+    // --- Conversation List ---
+    &__list {
+        width: 340px;
+        min-width: 280px;
+        border-right: 1px solid var(--stroke-2);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+
+    &__list-header {
+        padding: $spacing-lg $spacing-base;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        h2 {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-bold;
+        }
+    }
+
+    &__new-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: $radius-sm;
+        background: transparent;
+        color: var(--fg-2);
+        cursor: pointer;
+        transition: background $duration-fast $easing-decelerate, color $duration-fast;
+
+        &:hover {
+            background: var(--bg-hover);
+            color: $color-brand-primary;
+        }
+    }
+
+    &__back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: $radius-sm;
+        background: transparent;
+        color: var(--fg-2);
+        cursor: pointer;
+        flex-shrink: 0;
+
+        &:hover {
+            background: var(--bg-hover);
+        }
+    }
+
+    &__search {
+        padding: 0 $spacing-base $spacing-md;
+
+        .input { width: 100%; }
+    }
+
+    &__conversations {
+        flex: 1;
+        overflow-y: auto;
+        @include fluent-scrollbar;
+    }
+
+    &__empty {
+        padding: $spacing-xxl;
+        text-align: center;
+        font-size: $font-size-sm;
+    }
+
+    // --- Message Detail ---
+    &__detail {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-2);
+        min-width: 0;
+    }
+
+    &__detail-header {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        padding: $spacing-base $spacing-lg;
+        border-bottom: 1px solid var(--stroke-2);
+        background: var(--bg-1);
+        flex-shrink: 0;
+
+        h3 {
+            font-size: $font-size-lg;
+            font-weight: $font-weight-semibold;
+            margin: 0;
+        }
+    }
+
+    &__messages {
+        flex: 1;
+        padding: $spacing-lg;
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+        overflow-y: auto;
+        @include fluent-scrollbar;
+    }
+
+    &__loading, &__no-messages {
+        text-align: center;
+        padding: $spacing-xxl;
+    }
+
+    &__compose {
+        display: flex;
+        gap: $spacing-sm;
+        padding: $spacing-base $spacing-lg;
+        border-top: 1px solid var(--stroke-2);
+        background: var(--bg-1);
+        flex-shrink: 0;
+    }
+
+    &__input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__send-btn {
+        flex-shrink: 0;
+    }
+
+    &__placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: $spacing-base;
+    }
+}
+
+// --- Conversation Item ---
+.conversation {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    width: 100%;
+    padding: $spacing-md $spacing-base;
+    border: none;
+    background: transparent;
+    color: var(--fg-1);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background $duration-fast $easing-decelerate;
+
+    &:hover {
+        background: var(--bg-hover);
+    }
+
+    &--active {
+        background: var(--sidebar-item-selected-bg);
+    }
+
+    &__avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-circular;
+        background: $color-brand-primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+
+        &--lg {
+            width: 36px;
+            height: 36px;
+        }
+
+        &--sm {
+            width: 32px;
+            height: 32px;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__initials {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-bold;
+        color: #ffffff;
+    }
+
+    &__online {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        background: $color-success;
+        border: 2px solid var(--bg-1);
+        border-radius: $radius-circular;
+    }
+
+    &__content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__top, &__bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $spacing-sm;
+    }
+
+    &__name {
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-base;
+        @include text-ellipsis;
+    }
+
+    &__time {
+        font-size: $font-size-xs;
+        flex-shrink: 0;
+    }
+
+    &__preview {
+        font-size: $font-size-sm;
+        @include text-ellipsis;
+        flex: 1;
+    }
+}
+
+.conversation-skeleton {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-base;
+}
+
+// --- Message Bubble ---
+.message-bubble {
+    max-width: 65%;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    background: var(--card-bg);
+    box-shadow: var(--shadow-card);
+    animation: fadeInMsg 150ms ease;
+
+    &--own {
+        align-self: flex-end;
+        background: $color-brand-primary;
+        color: #ffffff;
+
+        .message-bubble__time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    }
+
+    &__text {
+        font-size: $font-size-base;
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    &__time {
+        font-size: $font-size-xs;
+        display: block;
+        text-align: right;
+        margin-top: $spacing-xxs;
+    }
+}
+
+// --- New Chat Panel ---
+.new-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    &__search {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-base $spacing-lg;
+        border-bottom: 1px solid var(--stroke-2);
+        background: var(--bg-1);
+    }
+
+    &__label {
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-base;
+        color: var(--fg-2);
+        flex-shrink: 0;
+    }
+
+    &__input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__results {
+        flex: 1;
+        overflow-y: auto;
+        @include fluent-scrollbar;
+    }
+
+    &__loading {
+        padding: $spacing-xxl;
+        text-align: center;
+    }
+
+    &__no-results, &__hint {
+        padding: $spacing-xxl $spacing-lg;
+        text-align: center;
+        font-size: $font-size-sm;
+    }
+
+    &__result {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        width: 100%;
+        padding: $spacing-md $spacing-lg;
+        border: none;
+        background: transparent;
+        color: var(--fg-1);
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        transition: background $duration-fast $easing-decelerate;
+
+        &:hover {
+            background: var(--bg-hover);
+        }
+    }
+
+    &__result-name {
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+    }
+
+    &__selected {
+        padding: $spacing-sm $spacing-lg;
+        background: var(--bg-1);
+        border-bottom: 1px solid var(--stroke-2);
+    }
+
+    &__user-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-xxs $spacing-md $spacing-xxs $spacing-xxs;
+        border-radius: $radius-circular;
+        background: rgba($color-brand-primary, 0.1);
+        color: var(--fg-1);
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+    }
+
+    &__remove {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: $radius-circular;
+        background: transparent;
+        color: var(--fg-3);
+        cursor: pointer;
+        font-size: 12px;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--fg-1);
+        }
+    }
+
+    &__compose {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-md;
+        padding: $spacing-lg;
+    }
+
+    &__textarea {
+        flex: 1;
+        resize: none;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    &__error {
+        padding: $spacing-sm $spacing-md;
+        border-radius: $radius-sm;
+        background: rgba(211, 47, 47, 0.08);
+        color: #d32f2f;
+        font-size: $font-size-sm;
+    }
+
+    &__actions {
+        display: flex;
+        gap: $spacing-sm;
+        justify-content: flex-end;
+    }
+}
+
+// --- Buttons (local) ---
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: $radius-sm;
+    background: $color-brand-primary;
+    color: #ffffff;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: opacity $duration-fast;
+
+    &:hover { opacity: 0.9; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--stroke-2);
+    border-radius: $radius-sm;
+    background: var(--bg-2);
+    color: var(--fg-1);
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: background $duration-fast;
+
+    &:hover { background: var(--bg-hover); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// --- Badge ---
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: $radius-circular;
+    background: $color-brand-primary;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+    flex-shrink: 0;
+}
+
+@keyframes fadeInMsg {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}

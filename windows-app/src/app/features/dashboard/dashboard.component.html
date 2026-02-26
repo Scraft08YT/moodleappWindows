@@ -1,0 +1,158 @@
+<div class="dashboard">
+    <!-- Header -->
+    <header class="dashboard__header">
+        <h1 class="dashboard__greeting">{{ greeting() }}</h1>
+        <p class="dashboard__summary text-muted">
+            {{ totalCourses() }} Kurse · {{ unreadNotifications() }} neue Benachrichtigungen
+        </p>
+    </header>
+
+    <!-- Quick Stats -->
+    <div class="dashboard__stats">
+        <a class="stat-card card" routerLink="/courses">
+            <div class="stat-card__icon stat-card__icon--courses">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M4 3a1 1 0 00-1 1v12a1 1 0 001 1h3.5a2.5 2.5 0 012.5 2.5.5.5 0 001 0A2.5 2.5 0 0113.5 17H16a1 1 0 001-1V4a1 1 0 00-1-1h-3.5A3.5 3.5 0 0010 4.67 3.5 3.5 0 007.5 3H4z" />
+                </svg>
+            </div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ totalCourses() }}</span>
+                <span class="stat-card__label">Kurse</span>
+            </div>
+        </a>
+
+        <a class="stat-card card" routerLink="/notifications">
+            <div class="stat-card__icon stat-card__icon--notifications">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M10 2a5 5 0 00-5 5v2.09a1 1 0 01-.2.6l-1.35 1.8A1 1 0 004.25 13h11.5a1 1 0 00.8-1.6l-1.36-1.82a1 1 0 01-.19-.58V7a5 5 0 00-5-5zm-1.5 14a1.5 1.5 0 003 0h-3z" />
+                </svg>
+            </div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ unreadNotifications() }}</span>
+                <span class="stat-card__label">Benachrichtigungen</span>
+            </div>
+        </a>
+
+        <a class="stat-card card" routerLink="/calendar">
+            <div class="stat-card__icon stat-card__icon--events">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M7 2.5a.5.5 0 00-1 0V3H4.5A1.5 1.5 0 003 4.5v11A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-11A1.5 1.5 0 0015.5 3H14v-.5a.5.5 0 00-1 0V3H7v-.5zM4 7h12v8.5a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5V7z" />
+                </svg>
+            </div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ upcomingEvents().length }}</span>
+                <span class="stat-card__label">Termine</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Recent Courses -->
+    <section class="dashboard__section">
+        <div class="dashboard__section-header">
+            <h2>Meine Kurse</h2>
+            <a routerLink="/courses" class="dashboard__section-link">Alle anzeigen →</a>
+        </div>
+
+        @if (coursesLoading()) {
+        <div class="grid grid--auto-fill">
+            @for (i of [1, 2, 3]; track i) {
+            <div class="course-card-skeleton card">
+                <div class="skeleton" style="height: 120px; border-radius: 8px 8px 0 0;"></div>
+                <div style="padding: 12px;">
+                    <div class="skeleton" style="height: 16px; width: 80%; margin-bottom: 8px;"></div>
+                    <div class="skeleton" style="height: 12px; width: 50%;"></div>
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <div class="grid grid--auto-fill">
+            @for (course of recentCourses(); track course.id) {
+            <a class="course-card card" [routerLink]="['/courses', course.id]">
+                <div class="course-card__image">
+                    @if (hasCourseImage(course)) {
+                    <img [src]="course.courseImage" [alt]="course.fullname" loading="lazy" (error)="onImageError(course.id)" />
+                    } @else {
+                    <div class="course-card__placeholder" [style.background]="getCourseColor(course)">
+                        <span class="course-card__placeholder-initials">{{ getCourseInitials(course) }}</span>
+                        <span class="course-card__placeholder-name">{{ course.shortname }}</span>
+                    </div>
+                    }
+                    @if (course.isfavourite) {
+                    <span class="course-card__favourite" aria-label="Favorit">★</span>
+                    }
+                </div>
+                <div class="course-card__body">
+                    <h3 class="course-card__title">{{ course.fullname }}</h3>
+                    <span class="course-card__shortname text-muted">{{ course.shortname }}</span>
+                    @if (course.progress !== null) {
+                    <div class="course-card__progress">
+                        <div class="course-card__progress-bar">
+                            <div class="course-card__progress-fill" [style.width]="getProgressPercentage(course)"></div>
+                        </div>
+                        <span class="course-card__progress-label">{{ getProgressPercentage(course) }}</span>
+                    </div>
+                    }
+                </div>
+            </a>
+            } @empty {
+            <div class="dashboard__empty">
+                <p class="text-muted">Keine Kurse gefunden.</p>
+            </div>
+            }
+        </div>
+        }
+    </section>
+
+    <!-- Upcoming Events -->
+    <section class="dashboard__section">
+        <div class="dashboard__section-header">
+            <h2>Nächste Termine</h2>
+            <a routerLink="/calendar" class="dashboard__section-link">Kalender öffnen →</a>
+        </div>
+
+        @if (eventsLoading()) {
+        <div class="events-list">
+            @for (i of [1, 2, 3]; track i) {
+            <div class="event-item card">
+                <div class="skeleton" style="width: 40px; height: 40px; border-radius: 8px;"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton" style="height: 14px; width: 60%; margin-bottom: 6px;"></div>
+                    <div class="skeleton" style="height: 12px; width: 40%;"></div>
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <div class="events-list">
+            @for (event of upcomingEvents(); track event.id) {
+            <div class="event-item card">
+                <div class="event-item__date">
+                    <span class="event-item__day">{{ event.timeStart * 1000 | date:'dd' }}</span>
+                    <span class="event-item__month">{{ event.timeStart * 1000 | date:'MMM' }}</span>
+                </div>
+                <div class="event-item__content">
+                    <h4 class="event-item__title">{{ event.name }}</h4>
+                    <span class="event-item__meta text-muted">
+                        {{ formatEventDate(event) }}
+                        @if (event.courseName) {
+                        · {{ event.courseName }}
+                        }
+                    </span>
+                </div>
+                <span class="event-item__type" [attr.data-type]="event.eventType">
+                    {{ event.eventType }}
+                </span>
+            </div>
+            } @empty {
+            <div class="dashboard__empty">
+                <p class="text-muted">Keine anstehenden Termine.</p>
+            </div>
+            }
+        </div>
+        }
+    </section>
+</div>

@@ -1,0 +1,236 @@
+// ============================================================================
+// Moodle Desktop – Global Styles
+// Windows 11 Fluent Design Language
+// ============================================================================
+
+@use 'styles/variables' as *;
+@use 'styles/fluent' as *;
+@use 'styles/animations';
+@use 'styles/layout';
+
+// ============================================================================
+// CSS Custom Properties (Theme Tokens)
+// ============================================================================
+
+:root,
+[data-theme="light"] {
+    // Backgrounds
+    --bg-1: #{$color-neutral-background-1};
+    --bg-2: #{$color-neutral-background-2};
+    --bg-3: #{$color-neutral-background-3};
+    --bg-subtle: #{$color-neutral-background-subtle};
+    --bg-mica: rgba(255, 255, 255, 0.75);
+    --bg-acrylic: rgba(255, 255, 255, 0.80);
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --bg-active: rgba(0, 0, 0, 0.07);
+    --card-bg: #{$color-neutral-background-1};
+    --input-bg: #{$color-neutral-background-1};
+
+    // Foregrounds
+    --fg-1: #{$color-neutral-foreground-1};
+    --fg-2: #{$color-neutral-foreground-2};
+    --fg-3: #{$color-neutral-foreground-3};
+    --fg-disabled: #{$color-neutral-foreground-disabled};
+
+    // Strokes
+    --stroke-1: #{$color-neutral-stroke-1};
+    --stroke-2: #{$color-neutral-stroke-2};
+    --focus-stroke: #{$color-brand-primary};
+
+    // Shadows
+    --shadow-card: #{$shadow-4};
+    --shadow-card-hover: #{$shadow-8};
+    --shadow-dialog: #{$shadow-28};
+    --shadow-flyout: #{$shadow-16};
+
+    // Scrollbar
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
+
+    // Sidebar
+    --sidebar-bg: rgba(243, 243, 243, 0.85);
+    --sidebar-item-hover: rgba(0, 0, 0, 0.04);
+    --sidebar-item-active: rgba(0, 0, 0, 0.06);
+    --sidebar-item-selected-bg: rgba(0, 0, 0, 0.06);
+    --sidebar-item-selected-indicator: #{$color-brand-primary};
+}
+
+[data-theme="dark"] {
+    // Backgrounds
+    --bg-1: #{$color-dark-background-1};
+    --bg-2: #{$color-dark-background-2};
+    --bg-3: #{$color-dark-background-3};
+    --bg-subtle: #{$color-dark-background-subtle};
+    --bg-mica: rgba(30, 30, 30, 0.80);
+    --bg-acrylic: rgba(30, 30, 30, 0.85);
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(255, 255, 255, 0.04);
+    --card-bg: #{$color-dark-background-2};
+    --input-bg: #{$color-dark-background-3};
+
+    // Foregrounds
+    --fg-1: #{$color-dark-foreground-1};
+    --fg-2: #{$color-dark-foreground-2};
+    --fg-3: #{$color-dark-foreground-3};
+    --fg-disabled: #{$color-dark-foreground-disabled};
+
+    // Strokes
+    --stroke-1: #{$color-dark-stroke-1};
+    --stroke-2: #{$color-dark-stroke-2};
+    --focus-stroke: #{$color-brand-primary};
+
+    // Shadows
+    --shadow-card: #{$shadow-dark-4};
+    --shadow-card-hover: #{$shadow-dark-8};
+    --shadow-dialog: #{$shadow-dark-16};
+    --shadow-flyout: #{$shadow-dark-8};
+
+    // Scrollbar
+    --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
+
+    // Sidebar
+    --sidebar-bg: rgba(32, 32, 32, 0.85);
+    --sidebar-item-hover: rgba(255, 255, 255, 0.06);
+    --sidebar-item-active: rgba(255, 255, 255, 0.04);
+    --sidebar-item-selected-bg: rgba(255, 255, 255, 0.06);
+    --sidebar-item-selected-indicator: #{$color-brand-primary};
+}
+
+// ============================================================================
+// Reset & Base
+// ============================================================================
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: $font-family;
+    font-size: $font-size-base;
+    line-height: 1.5;
+    color: var(--fg-1);
+    background: var(--bg-1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: transparent; // Mica effect shines through
+}
+
+a {
+    color: #{$color-brand-primary};
+    text-decoration: none;
+    transition: color $duration-fast $easing-decelerate;
+
+    &:hover {
+        color: #{$color-brand-primary-hover};
+        text-decoration: underline;
+    }
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+// Disable drag on all images and links (Tauri)
+img, a {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+// Enable smooth scrolling on scrollable areas
+.scroll-area {
+    @include fluent-scrollbar;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+// ============================================================================
+// Utility Classes
+// ============================================================================
+
+.btn-primary {
+    @include fluent-button-primary;
+}
+
+.btn-subtle {
+    @include fluent-button-subtle;
+}
+
+.btn-outline {
+    @include fluent-button-outline;
+}
+
+.input {
+    @include fluent-input;
+}
+
+.card {
+    @include fluent-card;
+    padding: $spacing-base;
+}
+
+.badge {
+    @include fluent-badge;
+    background: #{$color-brand-primary};
+    color: #ffffff;
+}
+
+.badge--danger {
+    @include fluent-badge;
+    background: #{$color-error};
+    color: #ffffff;
+}
+
+// ============================================================================
+// Transitions for Router Outlet
+// ============================================================================
+
+.page-content {
+    animation: page-enter $duration-slow $easing-decelerate;
+}
+
+// ============================================================================
+// Icon Utility (for inline SVG icons)
+// ============================================================================
+
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: currentColor;
+}
+
+.icon--sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon--lg {
+    width: 24px;
+    height: 24px;
+}
+
+// ============================================================================
+// Selection
+// ============================================================================
+
+::selection {
+    background: rgba($color-brand-primary, 0.3);
+    color: var(--fg-1);
+}

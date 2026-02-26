@@ -1,0 +1,178 @@
+// ============================================================================
+// Moodle Desktop – Fluent Design Component Mixins & Utilities
+// ============================================================================
+
+@use 'variables' as *;
+
+// --- Mica / Acrylic Background ---
+@mixin mica-background {
+    background-color: var(--bg-mica, rgba(255, 255, 255, 0.75));
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
+}
+
+@mixin acrylic-background($opacity: 0.8) {
+    background-color: var(--bg-acrylic, rgba(255, 255, 255, $opacity));
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+}
+
+// --- Card ---
+@mixin fluent-card {
+    background: var(--card-bg);
+    border: 1px solid var(--stroke-1);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow $duration-normal $easing-decelerate,
+                transform $duration-normal $easing-decelerate;
+
+    &:hover {
+        box-shadow: var(--shadow-card-hover);
+        transform: translateY(-1px);
+    }
+}
+
+// --- Button Base ---
+@mixin fluent-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    height: 32px;
+    padding: 0 $spacing-base;
+    border-radius: $radius-sm;
+    font-family: $font-family;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background $duration-fast $easing-decelerate,
+                border-color $duration-fast $easing-decelerate,
+                color $duration-fast $easing-decelerate;
+    user-select: none;
+    outline: none;
+
+    &:focus-visible {
+        outline: 2px solid var(--focus-stroke);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+@mixin fluent-button-primary {
+    @include fluent-button;
+    background: $color-brand-primary;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+        background: $color-brand-primary-hover;
+    }
+
+    &:active:not(:disabled) {
+        background: $color-brand-primary-active;
+    }
+}
+
+@mixin fluent-button-subtle {
+    @include fluent-button;
+    background: transparent;
+    color: var(--fg-1);
+
+    &:hover:not(:disabled) {
+        background: var(--bg-hover);
+    }
+
+    &:active:not(:disabled) {
+        background: var(--bg-active);
+    }
+}
+
+@mixin fluent-button-outline {
+    @include fluent-button;
+    background: transparent;
+    color: var(--fg-1);
+    border-color: var(--stroke-1);
+
+    &:hover:not(:disabled) {
+        background: var(--bg-hover);
+    }
+}
+
+// --- Input ---
+@mixin fluent-input {
+    height: 32px;
+    padding: 0 $spacing-md;
+    background: var(--input-bg);
+    border: 1px solid var(--stroke-1);
+    border-bottom: 2px solid var(--stroke-1);
+    border-radius: $radius-sm;
+    font-family: $font-family;
+    font-size: $font-size-base;
+    color: var(--fg-1);
+    outline: none;
+    transition: border-color $duration-fast $easing-decelerate;
+
+    &::placeholder {
+        color: var(--fg-3);
+    }
+
+    &:focus {
+        border-bottom-color: $color-brand-primary;
+    }
+}
+
+// --- Badge ---
+@mixin fluent-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: $radius-circular;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+}
+
+// --- Scrollbar ---
+@mixin fluent-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: $radius-circular;
+
+        &:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+}
+
+// --- Text Truncation ---
+@mixin text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

@@ -1,0 +1,78 @@
+<div class="courses-page">
+    <header class="courses-page__header">
+        <h1>Meine Kurse</h1>
+        <div class="courses-page__actions">
+            <div class="courses-page__search">
+                <svg class="courses-page__search-icon" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                    <path
+                        d="M8.5 3a5.5 5.5 0 014.38 8.82l3.65 3.65a.5.5 0 01-.7.7l-3.65-3.64A5.5 5.5 0 118.5 3zm0 1a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
+                </svg>
+                <input class="input" type="search" placeholder="Kurse durchsuchen…" [ngModel]="searchQuery()"
+                    (ngModelChange)="searchQuery.set($event)" />
+            </div>
+            <button class="btn-outline" [class.active]="filterFavourites()" (click)="toggleFavourites()">
+                ★ Favoriten
+            </button>
+            <a class="btn-primary" routerLink="/courses/search" style="text-decoration: none;">
+                <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+                    <path d="M10 2.5a.5.5 0 01.5.5v6.5H17a.5.5 0 010 1h-6.5V17a.5.5 0 01-1 0v-6.5H3a.5.5 0 010-1h6.5V3a.5.5 0 01.5-.5z" />
+                </svg>
+                Kurs finden
+            </a>
+        </div>
+    </header>
+
+    @if (loading()) {
+    <div class="grid grid--auto-fill">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="course-card-skeleton card">
+            <div class="skeleton" style="height: 160px;"></div>
+            <div style="padding: 16px 20px;">
+                <div class="skeleton" style="height: 16px; width: 80%; margin-bottom: 8px;"></div>
+                <div class="skeleton" style="height: 12px; width: 50%;"></div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="grid grid--auto-fill">
+        @for (course of filteredCourses(); track course.id) {
+        <a class="course-card card" [routerLink]="['/courses', course.id]">
+            <div class="course-card__image">
+                @if (hasCourseImage(course)) {
+                <img [src]="course.courseImage" [alt]="course.fullname" loading="lazy" (error)="onImageError(course.id)" />
+                } @else {
+                <div class="course-card__placeholder" [style.background]="getCourseColor(course)">
+                    <span class="course-card__placeholder-initials">{{ getCourseInitials(course) }}</span>
+                    <span class="course-card__placeholder-name">{{ course.shortname }}</span>
+                </div>
+                }
+                @if (course.isfavourite) {
+                <span class="course-card__favourite">★</span>
+                }
+            </div>
+            <div class="course-card__body">
+                <h3 class="course-card__title">{{ course.fullname }}</h3>
+                <span class="course-card__shortname text-muted">{{ course.shortname }}</span>
+                @if (course.progress !== null) {
+                <div class="course-card__progress">
+                    <div class="course-card__progress-bar">
+                        <div class="course-card__progress-fill" [style.width]="getProgressPercentage(course)"></div>
+                    </div>
+                    <span class="course-card__progress-label">{{ getProgressPercentage(course) }}</span>
+                </div>
+                }
+            </div>
+        </a>
+        } @empty {
+        <div class="courses-page__empty">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="var(--fg-disabled)">
+                <path
+                    d="M8 6a2 2 0 00-2 2v24a2 2 0 002 2h7a5 5 0 015 5 .5.5 0 001 0 5 5 0 015-5h7a2 2 0 002-2V8a2 2 0 00-2-2h-7a7 7 0 00-5 2.1A7 7 0 0015 6H8z" />
+            </svg>
+            <p>Keine Kurse gefunden.</p>
+        </div>
+        }
+    </div>
+    }
+</div>

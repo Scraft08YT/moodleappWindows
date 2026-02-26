@@ -16,7 +16,7 @@ log.txt
 /.versions
 /coverage
 
-# Ionic
+# Ionic (original Moodle App)
 /.ionic
 /www
 /platforms
@@ -51,7 +51,6 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
 # Miscellaneous
 /.angular
 /.angular/cache
@@ -68,7 +67,7 @@ circular-dependencies
 .DS_Store
 Thumbs.db
 
-# Moodle App
+# Moodle App (original)
 /src/assets/lib
 /src/assets/lang/*
 /src/assets/env.json
@@ -76,3 +75,34 @@ Thumbs.db
 
 /moodle.config.*.json
 !/moodle.config.example.json
+
+# ─────────────────────────────────────────────
+# Windows Desktop App (Tauri + Angular)
+# ─────────────────────────────────────────────
+
+# Rust build cache (5+ GB)
+windows-app/src-tauri/target/
+
+# Angular build cache & output
+windows-app/.angular/
+windows-app/dist/
+
+# Node modules
+windows-app/node_modules/
+
+# Tauri generated files (WRY/WebView bindings)
+windows-app/src-tauri/gen/
+
+# Build artefacts
+windows-app/build_result.txt
+
+# Tauri signing keys (NEVER commit these!)
+*.key
+*.key.pub
+.tauri/
+
+# IDE settings inside windows-app
+windows-app/.vscode/
+
+# Personal tutorial (local only)
+TUTORIAL.md

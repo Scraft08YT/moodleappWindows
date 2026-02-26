@@ -1,0 +1,45 @@
+@use 'variables' as *;
+@use 'fluent' as *;
+
+.shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--bg-1);
+}
+
+.shell__body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.shell__content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg-2);
+    border-top-left-radius: $radius-lg;
+
+    @include fluent-scrollbar;
+}
+
+.shell__content-inner {
+    max-width: $content-max-width;
+    margin: 0 auto;
+    padding: $spacing-xxl $spacing-xl;
+}
+
+.shell__offline-bar {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-lg;
+    background: rgba($color-warning, 0.12);
+    color: $color-warning;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    border-bottom: 1px solid rgba($color-warning, 0.25);
+}

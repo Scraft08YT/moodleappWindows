@@ -1,0 +1,58 @@
+{
+    "productName": "Moodle Desktop",
+    "version": "1.0.0",
+    "identifier": "com.moodle.desktop",
+    "build": {
+        "frontendDist": "../dist/moodle-desktop/browser",
+        "devUrl": "http://localhost:4200",
+        "beforeDevCommand": "npm run start",
+        "beforeBuildCommand": "npm run build:prod"
+    },
+    "app": {
+        "windows": [
+            {
+                "label": "main",
+                "title": "Moodle Desktop",
+                "width": 1280,
+                "height": 800,
+                "minWidth": 900,
+                "minHeight": 600,
+                "resizable": true,
+                "decorations": false,
+                "transparent": true,
+                "center": true
+            }
+        ],
+        "security": {
+            "csp": "default-src 'self'; connect-src 'self' https://*; img-src 'self' https://* data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'"
+        },
+        "trayIcon": {
+            "iconPath": "icons/icon.png",
+            "iconAsTemplate": true,
+            "tooltip": "Moodle Desktop"
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["msi", "nsis"],
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.ico"
+        ],
+        "windows": {
+            "certificateThumbprint": null,
+            "digestAlgorithm": "sha256",
+            "timestampUrl": ""
+        }
+    },
+    "plugins": {
+        "updater": {
+            "endpoints": [
+                "https://github.com/Scraft08YT/moodleappWindows/releases/latest/download/latest.json"
+            ],
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxQ0YwQkExNTg0RTdBM0YKUldRL2VrNVlvUXZQd1o5ZzB1OVA1aGtyeEJZdk5BYmQyTmtqL3dzL3pZV0FLYytkaTkxLzlycXcK"
+        }
+    }
+}

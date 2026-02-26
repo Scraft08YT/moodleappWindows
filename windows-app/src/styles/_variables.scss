@@ -1,0 +1,101 @@
+// ============================================================================
+// Moodle Desktop – Fluent Design Variables
+// Windows 11 Design Language
+// ============================================================================
+
+// --- Colour Tokens (Light Theme) ---
+$color-brand-primary: #f57c00;           // Moodle orange
+$color-brand-primary-hover: #ef6c00;
+$color-brand-primary-active: #e65100;
+$color-brand-secondary: #1976d2;
+
+// Neutral palette (Fluent Design System)
+$color-neutral-background-1: #ffffff;
+$color-neutral-background-2: #f5f5f5;
+$color-neutral-background-3: #ebebeb;
+$color-neutral-background-subtle: #fafafa;
+$color-neutral-foreground-1: #1a1a1a;
+$color-neutral-foreground-2: #424242;
+$color-neutral-foreground-3: #707070;
+$color-neutral-foreground-disabled: #bdbdbd;
+$color-neutral-stroke-1: #e0e0e0;
+$color-neutral-stroke-2: #eeeeee;
+
+// Semantic colours
+$color-success: #107c10;
+$color-warning: #ffb900;
+$color-error: #d13438;
+$color-info: #0078d4;
+
+// --- Colour Tokens (Dark Theme) ---
+$color-dark-background-1: #1e1e1e;
+$color-dark-background-2: #2d2d2d;
+$color-dark-background-3: #383838;
+$color-dark-background-subtle: #252525;
+$color-dark-foreground-1: #ffffff;
+$color-dark-foreground-2: #d4d4d4;
+$color-dark-foreground-3: #a0a0a0;
+$color-dark-foreground-disabled: #5c5c5c;
+$color-dark-stroke-1: #404040;
+$color-dark-stroke-2: #333333;
+
+// --- Typography ---
+$font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+$font-size-xs: 10px;
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 20px;
+$font-size-xxl: 24px;
+$font-size-display: 28px;
+$font-size-hero: 40px;
+
+$font-weight-regular: 400;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// --- Spacing ---
+$spacing-xxs: 2px;
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-base: 16px;
+$spacing-lg: 20px;
+$spacing-xl: 24px;
+$spacing-xxl: 32px;
+$spacing-xxxl: 48px;
+
+// --- Border Radius (Windows 11) ---
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-circular: 9999px;
+
+// --- Shadows (Fluent Elevation) ---
+$shadow-2: 0 1px 2px rgba(0, 0, 0, 0.08);
+$shadow-4: 0 2px 4px rgba(0, 0, 0, 0.08);
+$shadow-8: 0 4px 8px rgba(0, 0, 0, 0.08);
+$shadow-16: 0 8px 16px rgba(0, 0, 0, 0.12);
+$shadow-28: 0 14px 28px rgba(0, 0, 0, 0.14);
+$shadow-64: 0 32px 64px rgba(0, 0, 0, 0.18);
+
+$shadow-dark-2: 0 1px 2px rgba(0, 0, 0, 0.24);
+$shadow-dark-4: 0 2px 4px rgba(0, 0, 0, 0.24);
+$shadow-dark-8: 0 4px 8px rgba(0, 0, 0, 0.24);
+$shadow-dark-16: 0 8px 16px rgba(0, 0, 0, 0.28);
+
+// --- Animation ---
+$duration-fast: 100ms;
+$duration-normal: 200ms;
+$duration-slow: 300ms;
+$duration-slower: 500ms;
+$easing-decelerate: cubic-bezier(0, 0, 0, 1);
+$easing-accelerate: cubic-bezier(1, 0, 1, 1);
+$easing-standard: cubic-bezier(0.33, 0, 0.67, 1);
+
+// --- Layout ---
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 60px;
+$titlebar-height: 48px;
+$content-max-width: 1200px;
