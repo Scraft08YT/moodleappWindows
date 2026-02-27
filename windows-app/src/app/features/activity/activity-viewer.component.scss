@@ -1105,8 +1105,19 @@
     font-size: 14px;
     line-height: 1.6;
 
+    // ── Unsupported question type notice ──
+    ::ng-deep .unsupported-qtype-notice {
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        background: rgba(237, 108, 2, 0.1);
+        border: 1px solid rgba(237, 108, 2, 0.25);
+        color: var(--fg-2);
+        font-size: 13px;
+    }
+
     // ── Moodle question wrapper (.que) ──
-    :deep(.que) {
+    ::ng-deep .que {
         margin-bottom: 24px;
         padding-bottom: 20px;
         border-bottom: 1px solid var(--border);
@@ -1115,7 +1126,7 @@
     }
 
     // ── Question info sidebar (number, grade, flag) ──
-    :deep(.info) {
+    ::ng-deep .info {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -1162,19 +1173,19 @@
     }
 
     // ── Content area ──
-    :deep(.content) {
+    ::ng-deep .content {
         padding: 0;
     }
 
     // ── Formulation (question body) ──
-    :deep(.formulation) {
+    ::ng-deep .formulation {
         margin-bottom: 16px;
         padding: 14px 16px;
         border-radius: 8px;
         background: var(--bg-2);
     }
 
-    :deep(.qtext) {
+    ::ng-deep .qtext {
         margin-bottom: 12px;
         font-weight: 500;
         color: var(--fg-1);
@@ -1183,12 +1194,12 @@
     }
 
     // ── Answer blocks ──
-    :deep(.ablock) {
+    ::ng-deep .ablock {
         margin-top: 8px;
     }
 
     // Multi-choice answer list
-    :deep(.answer) {
+    ::ng-deep .answer {
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -1220,7 +1231,7 @@
     }
 
     // ── Matching question table ──
-    :deep(table) {
+    ::ng-deep table {
         width: 100%;
         border-collapse: collapse;
         margin: 8px 0;
@@ -1250,8 +1261,8 @@
     }
 
     // ── Form controls ──
-    :deep(input[type="radio"]),
-    :deep(input[type="checkbox"]) {
+    ::ng-deep input[type="radio"],
+    ::ng-deep input[type="checkbox"] {
         accent-color: var(--accent);
         width: 16px;
         height: 16px;
@@ -1259,8 +1270,8 @@
         margin-top: 2px;
     }
 
-    :deep(input[type="text"]),
-    :deep(textarea) {
+    ::ng-deep input[type="text"],
+    ::ng-deep textarea {
         padding: 6px 10px;
         border: 1px solid var(--border);
         border-radius: 6px;
@@ -1274,7 +1285,7 @@
         &:focus { border-color: var(--accent); }
     }
 
-    :deep(select) {
+    ::ng-deep select {
         appearance: auto;
         padding: 6px 10px;
         border: 1px solid var(--border);
@@ -1291,12 +1302,12 @@
     }
 
     // ── Feedback areas ──
-    :deep(.outcome) {
+    ::ng-deep .outcome {
         margin-top: 12px;
     }
 
-    :deep(.feedback),
-    :deep(.specificfeedback) {
+    ::ng-deep .feedback,
+    ::ng-deep .specificfeedback {
         margin-top: 8px;
         padding: 10px 14px;
         border-radius: 6px;
@@ -1305,7 +1316,7 @@
         color: var(--fg-2);
     }
 
-    :deep(.generalfeedback) {
+    ::ng-deep .generalfeedback {
         margin-top: 8px;
         padding: 10px 14px;
         border-radius: 6px;
@@ -1314,7 +1325,7 @@
         color: var(--fg-2);
     }
 
-    :deep(.rightanswer) {
+    ::ng-deep .rightanswer {
         margin-top: 8px;
         padding: 10px 14px;
         border-radius: 6px;
@@ -1323,18 +1334,18 @@
         color: var(--fg-2);
     }
 
-    :deep(.numpartscorrect) {
+    ::ng-deep .numpartscorrect {
         margin-top: 6px;
         font-size: 13px;
         color: var(--fg-3);
     }
 
     // ── Correct/incorrect markers ──
-    :deep(.correct) { color: var(--status-submitted); }
-    :deep(.incorrect) { color: var(--status-overdue); }
-    :deep(.partiallycorrect) { color: var(--status-draft); }
+    ::ng-deep .correct { color: var(--status-submitted); }
+    ::ng-deep .incorrect { color: var(--status-overdue); }
+    ::ng-deep .partiallycorrect { color: var(--status-draft); }
 
-    :deep(.correctness) {
+    ::ng-deep .correctness {
         display: inline-block;
         font-size: 12px;
         font-weight: 500;
@@ -1358,27 +1369,38 @@
     }
 
     // Tick/cross icons next to answers
-    :deep(.icon.fa-check),
-    :deep(.icon.fa-times),
-    :deep(.fa-check),
-    :deep(.fa-times),
-    :deep(.fa-remove) {
+    ::ng-deep .icon.fa-check,
+    ::ng-deep .icon.fa-times,
+    ::ng-deep .fa-check,
+    ::ng-deep .fa-times,
+    ::ng-deep .fa-remove {
         font-size: 14px;
         margin-left: 4px;
     }
 
+    // ── Global flag image catch-all (may sit outside .info) ──
+    ::ng-deep .questionflagimage,
+    ::ng-deep .questionflag input[type="image"],
+    ::ng-deep .questionflag img {
+        width: 16px !important;
+        height: 16px !important;
+        vertical-align: middle;
+        opacity: 0.6;
+        border-radius: 0 !important;
+    }
+
     // ── Images ──
-    :deep(img) {
+    ::ng-deep img {
         max-width: 100%;
         border-radius: 4px;
         height: auto;
     }
 
     // ── Drag & drop / sortable placeholders ──
-    :deep(.draghome),
-    :deep(.droptarget),
-    :deep(.drop),
-    :deep(.place) {
+    ::ng-deep .draghome,
+    ::ng-deep .droptarget,
+    ::ng-deep .drop,
+    ::ng-deep .place {
         display: inline-block;
         padding: 4px 10px;
         border: 1px dashed var(--border);
@@ -1390,14 +1412,14 @@
     }
 
     // ── Hidden elements Moodle includes ──
-    :deep(.validationerror) {
+    ::ng-deep .validationerror {
         color: var(--status-overdue);
         font-size: 13px;
         margin-top: 4px;
     }
 
-    :deep(.accesshide),
-    :deep(.sr-only) {
+    ::ng-deep .accesshide,
+    ::ng-deep .sr-only {
         position: absolute !important;
         width: 1px !important;
         height: 1px !important;
@@ -1407,7 +1429,7 @@
     }
 
     // Links
-    :deep(a) {
+    ::ng-deep a {
         color: var(--accent);
         text-decoration: none;
 
@@ -1415,8 +1437,8 @@
     }
 
     // Moodle buttons (rendered as <input type="submit">)
-    :deep(input[type="submit"]),
-    :deep(button:not(.btn-primary):not(.btn-secondary):not(.btn-subtle)) {
+    ::ng-deep input[type="submit"],
+    ::ng-deep button:not(.btn-primary:not(.btn-secondary):not(.btn-subtle)) {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -1566,8 +1588,19 @@
         line-height: 1.6;
         color: var(--fg-2);
 
+        // ── Unsupported question type notice ──
+        ::ng-deep .unsupported-qtype-notice {
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            background: rgba(237, 108, 2, 0.1);
+            border: 1px solid rgba(237, 108, 2, 0.25);
+            color: var(--fg-2);
+            font-size: 13px;
+        }
+
         // ── Question info line (points, state, flag) ──
-        :deep(.info) {
+        ::ng-deep .info {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -1601,14 +1634,14 @@
         }
 
         // ── Question formulation ──
-        :deep(.formulation) {
+        ::ng-deep .formulation {
             padding: 12px 14px;
             border-radius: 8px;
             background: var(--bg-2);
             margin-bottom: 12px;
         }
 
-        :deep(.qtext) {
+        ::ng-deep .qtext {
             font-weight: 500;
             color: var(--fg-1);
             margin-bottom: 10px;
@@ -1616,12 +1649,12 @@
             p { margin: 4px 0; }
         }
 
-        :deep(.ablock) {
+        ::ng-deep .ablock {
             margin-top: 8px;
         }
 
         // ── Answer options ──
-        :deep(.answer) {
+        ::ng-deep .answer {
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -1647,7 +1680,7 @@
         }
 
         // ── Tables (matching questions) ──
-        :deep(table) {
+        ::ng-deep table {
             width: 100%;
             border-collapse: collapse;
             margin: 8px 0;
@@ -1674,8 +1707,8 @@
         }
 
         // ── Form controls (disabled in review) ──
-        :deep(input[type="radio"]),
-        :deep(input[type="checkbox"]) {
+        ::ng-deep input[type="radio"],
+        ::ng-deep input[type="checkbox"] {
             accent-color: var(--accent);
             width: 16px;
             height: 16px;
@@ -1684,8 +1717,8 @@
             pointer-events: none;
         }
 
-        :deep(input[type="text"]),
-        :deep(textarea) {
+        ::ng-deep input[type="text"],
+        ::ng-deep textarea {
             padding: 6px 10px;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -1698,7 +1731,7 @@
             max-width: 100%;
         }
 
-        :deep(select) {
+        ::ng-deep select {
             appearance: auto;
             padding: 6px 10px;
             border: 1px solid var(--border);
@@ -1713,11 +1746,11 @@
         }
 
         // ── Correctness badges ──
-        :deep(.correct) { color: var(--status-submitted); }
-        :deep(.incorrect) { color: var(--status-overdue); }
-        :deep(.partiallycorrect) { color: var(--status-draft); }
+        ::ng-deep .correct { color: var(--status-submitted); }
+        ::ng-deep .incorrect { color: var(--status-overdue); }
+        ::ng-deep .partiallycorrect { color: var(--status-draft); }
 
-        :deep(.correctness) {
+        ::ng-deep .correctness {
             display: inline-block;
             font-size: 12px;
             font-weight: 500;
@@ -1740,8 +1773,8 @@
         }
 
         // ── Feedback blocks ──
-        :deep(.feedback),
-        :deep(.specificfeedback) {
+        ::ng-deep .feedback,
+        ::ng-deep .specificfeedback {
             margin-top: 10px;
             padding: 10px 14px;
             border-radius: 6px;
@@ -1749,7 +1782,7 @@
             font-size: 13px;
         }
 
-        :deep(.generalfeedback) {
+        ::ng-deep .generalfeedback {
             margin-top: 8px;
             padding: 10px 14px;
             border-radius: 6px;
@@ -1757,7 +1790,7 @@
             font-size: 13px;
         }
 
-        :deep(.rightanswer) {
+        ::ng-deep .rightanswer {
             margin-top: 8px;
             padding: 10px 14px;
             border-radius: 6px;
@@ -1766,27 +1799,38 @@
             color: var(--fg-2);
         }
 
-        :deep(.numpartscorrect) {
+        ::ng-deep .numpartscorrect {
             margin-top: 6px;
             font-size: 13px;
             color: var(--fg-3);
         }
 
         // ── Outcome block (wraps feedback + rightanswer) ──
-        :deep(.outcome) {
+        ::ng-deep .outcome {
             margin-top: 12px;
         }
 
+        // ── Global flag image catch-all ──
+        ::ng-deep .questionflagimage,
+        ::ng-deep .questionflag input[type="image"],
+        ::ng-deep .questionflag img {
+            width: 16px !important;
+            height: 16px !important;
+            vertical-align: middle;
+            opacity: 0.5;
+            border-radius: 0 !important;
+        }
+
         // ── Images ──
-        :deep(img) {
+        ::ng-deep img {
             max-width: 100%;
             border-radius: 4px;
             height: auto;
         }
 
         // ── Hide screen-reader-only elements ──
-        :deep(.accesshide),
-        :deep(.sr-only) {
+        ::ng-deep .accesshide,
+        ::ng-deep .sr-only {
             position: absolute !important;
             width: 1px !important;
             height: 1px !important;
@@ -1796,10 +1840,10 @@
         }
 
         // Drag & drop placeholders
-        :deep(.draghome),
-        :deep(.droptarget),
-        :deep(.drop),
-        :deep(.place) {
+        ::ng-deep .draghome,
+        ::ng-deep .droptarget,
+        ::ng-deep .drop,
+        ::ng-deep .place {
             display: inline-block;
             padding: 4px 10px;
             border: 1px dashed var(--border);
@@ -1810,22 +1854,22 @@
             vertical-align: middle;
         }
 
-        :deep(.validationerror) {
+        ::ng-deep .validationerror {
             color: var(--status-overdue);
             font-size: 13px;
             margin-top: 4px;
         }
 
         // Links
-        :deep(a) {
+        ::ng-deep a {
             color: var(--accent);
             text-decoration: none;
             &:hover { text-decoration: underline; }
         }
 
         // Moodle submit buttons in review (shouldn't normally appear, but safety)
-        :deep(input[type="submit"]),
-        :deep(button) {
+        ::ng-deep input[type="submit"],
+        ::ng-deep button {
             display: inline-flex;
             align-items: center;
             padding: 6px 14px;

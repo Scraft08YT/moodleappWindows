@@ -823,6 +823,24 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
         }
     }
 
+    /** Question types that require JS interaction and cannot be rendered in static HTML. */
+    private static readonly UNSUPPORTED_QTYPES = new Set([
+        'ddimageortext', 'ddmarker', 'ddwtos', 'gapselect',
+    ]);
+
+    /** Adds an unsupported-notice banner if the question type can't be rendered properly. */
+    private annotateUnsupportedQuestions(questions: AttemptQuestion[]): void {
+        for (const q of questions) {
+            if (ActivityViewerComponent.UNSUPPORTED_QTYPES.has(q.type)) {
+                const banner = '<div class="unsupported-qtype-notice">'
+                    + '⚠️ Dieser Fragentyp (<strong>' + q.type + '</strong>) '
+                    + 'wird in der Desktop-App nur eingeschränkt dargestellt. '
+                    + 'Für volle Interaktivität bitte im Browser öffnen.</div>';
+                q.html = banner + q.html;
+            }
+        }
+    }
+
     /** Loads question data for a page of the current attempt. */
     private async loadAttemptPage(attemptId: number, page: number): Promise<void> {
         this.quizLoading.set(true);
@@ -831,7 +849,8 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             this.attemptPageData.set(data);
             this.attemptPage.set(page);
 
-            // Build combined question HTML
+            // Mark unsupported question types and build combined HTML
+            this.annotateUnsupportedQuestions(data.questions);
             const combined = data.questions.map((q) => q.html).join('');
             this.questionsHtml.set(this.sanitizer.bypassSecurityTrustHtml(
                 this.api.rewritePluginfileUrls(combined),
@@ -911,7 +930,8 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
             // Load review
             const review = await this.quizService.getAttemptReview(attempt.id);
-            // Rewrite pluginfile URLs and bypass Angular sanitiser so form elements survive
+            // Mark unsupported types, rewrite URLs, bypass sanitiser
+            this.annotateUnsupportedQuestions(review.questions);
             for (const q of review.questions) {
                 q.html = this.api.rewritePluginfileUrls(q.html);
                 (q as any).safeHtml = this.sanitizer.bypassSecurityTrustHtml(q.html);
@@ -943,7 +963,8 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
         this.quizError.set('');
         try {
             const review = await this.quizService.getAttemptReview(attemptId);
-            // Rewrite pluginfile URLs and bypass Angular sanitiser so form elements survive
+            // Mark unsupported types, rewrite URLs, bypass sanitiser
+            this.annotateUnsupportedQuestions(review.questions);
             for (const q of review.questions) {
                 q.html = this.api.rewritePluginfileUrls(q.html);
                 (q as any).safeHtml = this.sanitizer.bypassSecurityTrustHtml(q.html);
