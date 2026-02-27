@@ -8,6 +8,7 @@ import { CourseService } from '../../core/services/course.service';
 import { ForumService, type ForumDiscussion, type ForumPost, type Forum } from '../../core/services/forum.service';
 import { AssignmentService, type Assignment, type SubmissionStatus, type SubmissionFile } from '../../core/services/assignment.service';
 import { QuizService, type Quiz, type QuizAttempt, type AttemptPageData, type AttemptQuestion, type AttemptSummaryQuestion, type AttemptReview, type QuizAccessInfo, type UserBestGrade } from '../../core/services/quiz.service';
+import { QuizQuestionEngine } from '../../core/services/quiz-question-engine';
 import { FileUploadService } from '../../core/services/file-upload.service';
 import { MoodleApiService } from '../../core/services/moodle-api.service';
 import { FileDownloadService } from '../../core/services/file-download.service';
@@ -48,6 +49,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
     private readonly api = inject(MoodleApiService);
     private readonly fileDownload = inject(FileDownloadService);
     private readonly sanitizer = inject(DomSanitizer);
+    private readonly questionEngine = inject(QuizQuestionEngine);
 
     // Route params
     readonly courseId = signal(0);
@@ -680,6 +682,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.stopQuizTimer();
+        this.questionEngine.destroy();
     }
 
     // ========== Assignment Comments ==========
@@ -823,10 +826,8 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    /** Question types that require JS interaction and cannot be rendered in static HTML. */
-    private static readonly UNSUPPORTED_QTYPES = new Set([
-        'ddimageortext', 'ddmarker', 'ddwtos', 'gapselect',
-    ]);
+    /** Question types that truly cannot be rendered (empty now — DD types are handled by QuizQuestionEngine). */
+    private static readonly UNSUPPORTED_QTYPES = new Set<string>([]);
 
     /** Adds an unsupported-notice banner if the question type can't be rendered properly. */
     private annotateUnsupportedQuestions(questions: AttemptQuestion[]): void {
@@ -855,6 +856,9 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             this.questionsHtml.set(this.sanitizer.bypassSecurityTrustHtml(
                 this.api.rewritePluginfileUrls(combined),
             ));
+
+            // Activate interactive question types after DOM render.
+            this.activateQuestionEngine('.quiz-questions', false);
         } catch (err) {
             console.error('Load attempt page failed:', err);
             this.quizError.set('Seite konnte nicht geladen werden.');
@@ -939,6 +943,9 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             this.attemptReview.set(review);
             this.quizView.set('review');
 
+            // Activate interactive question types in review (readOnly).
+            this.activateQuestionEngine('.quiz-review-question__body', true);
+
             // Refresh attempt list
             const quiz = this.quiz();
             if (quiz) {
@@ -971,6 +978,9 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             }
             this.attemptReview.set(review);
             this.quizView.set('review');
+
+            // Activate interactive question types in review (readOnly).
+            this.activateQuestionEngine('.quiz-review-question__body', true);
         } catch (err) {
             console.error('Load review failed:', err);
             this.quizError.set('Überprüfung konnte nicht geladen werden.');
@@ -981,6 +991,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
     /** Returns to the quiz info page. */
     backToQuizInfo(): void {
+        this.questionEngine.destroy();
         this.quizView.set('info');
         this.currentAttempt.set(null);
         this.attemptPageData.set(null);
@@ -1031,6 +1042,21 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             clearInterval(this.quizTimerInterval);
             this.quizTimerInterval = null;
         }
+    }
+
+    /**
+     * After innerHTML has been set, wait for the next frame and then
+     * initialise the QuizQuestionEngine on all matching containers.
+     */
+    private activateQuestionEngine(selector: string, readOnly: boolean): void {
+        this.questionEngine.destroy();
+        // Wait for Angular to flush the innerHTML into the DOM.
+        setTimeout(async () => {
+            const containers = document.querySelectorAll<HTMLElement>(selector);
+            for (const el of Array.from(containers)) {
+                await this.questionEngine.initQuestions(el, readOnly);
+            }
+        }, 50);
     }
 
     // ── Quiz helpers ────────────────────────────────────

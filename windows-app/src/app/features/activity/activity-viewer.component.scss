@@ -1928,6 +1928,289 @@
     min-height: 60px;
 }
 
+/* ============================================================
+   DD Question Types — shared styles for ddwtos, ddimageortext, ddmarker
+   ============================================================ */
+
+/* ── ddwtos (Drag Words onto Sentences) ── */
+::ng-deep .que.ddwtos {
+    .qtext {
+        position: relative;
+
+        span.drop {
+            display: inline-block;
+            border: 1px solid #999;
+            border-radius: 3px;
+            min-width: 40px;
+            min-height: 20px;
+            vertical-align: middle;
+            background: rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+    }
+
+    .answercontainer,
+    .drags {
+        position: relative;
+        min-height: 30px;
+    }
+
+    .drags span.drag,
+    .draghome {
+        display: inline-block;
+        padding: 2px 6px;
+        margin: 2px;
+        border: 1px solid #aaa;
+        border-radius: 3px;
+        background: var(--bg-2, #f0f0f0);
+        color: var(--fg-1, #333);
+        cursor: pointer;
+        text-align: center;
+        user-select: none;
+        transition: box-shadow 120ms ease, transform 80ms ease;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .draghome {
+        visibility: hidden;
+    }
+
+    .drags span.drag.selected,
+    .drags span.drag.beingdragged {
+        box-shadow: 0 2px 8px rgba(0, 120, 215, 0.5);
+        transform: scale(1.05);
+        z-index: 10;
+        outline: 2px solid var(--accent, #0078d4);
+    }
+
+    .drags span.drag.unplaced {
+        opacity: 0.85;
+    }
+
+    /* Group colours */
+    .group1 { background-color: rgba(255, 255, 255, 0.15); }
+    .group2 { background-color: rgba(176, 196, 222, 0.25); }
+    .group3 { background-color: rgba(220, 220, 220, 0.2); }
+    .group4 { background-color: rgba(216, 191, 216, 0.25); }
+    .group5 { background-color: rgba(135, 206, 250, 0.2); }
+    .group6 { background-color: rgba(218, 165, 32, 0.2); }
+    .group7 { background-color: rgba(255, 215, 0, 0.2); }
+    .group8 { background-color: rgba(240, 230, 140, 0.2); }
+
+    &.readonly {
+        .drags span.drag { cursor: default; }
+    }
+}
+
+/* ── ddimageortext (Drag Images/Text onto Image) ── */
+::ng-deep .que.ddimageortext {
+    .ddarea {
+        position: relative;
+        text-align: center;
+        margin: 8px 0;
+    }
+
+    .dropbackground {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        user-select: none;
+    }
+
+    .dragitems,
+    .draghomes {
+        position: relative;
+        min-height: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 6px 0;
+    }
+
+    .dragitems .drag,
+    .draghome {
+        display: inline-block;
+        padding: 4px 8px;
+        margin: 2px;
+        border: 1px solid #888;
+        border-radius: 4px;
+        background: var(--bg-2, #f0f0f0);
+        color: var(--fg-1, #333);
+        cursor: pointer;
+        user-select: none;
+        font-size: 12px;
+        z-index: 5;
+        transition: box-shadow 120ms ease;
+    }
+
+    .draghome {
+        visibility: hidden;
+        position: absolute;
+    }
+
+    .dragplaceholder {
+        visibility: hidden;
+    }
+
+    .dragitems .drag.beingdragged {
+        box-shadow: 0 2px 8px rgba(0, 120, 215, 0.5);
+        outline: 2px solid var(--accent, #0078d4);
+        z-index: 20;
+    }
+
+    .dragitems .drag.placed {
+        z-index: 8;
+    }
+
+    .dragitems .drag img {
+        max-width: 120px;
+        max-height: 80px;
+        display: block;
+    }
+
+    .dropzones {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .dropzone {
+        position: absolute;
+        border: 2px dashed rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        min-width: 32px;
+        min-height: 24px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.15);
+        transition: border-color 120ms ease;
+
+        &:hover {
+            border-color: var(--accent, #0078d4);
+        }
+    }
+
+    /* Group colours for drop zones */
+    .dropzone.group1 { background-color: rgba(255, 255, 255, 0.2); }
+    .dropzone.group2 { background-color: rgba(176, 196, 222, 0.2); }
+    .dropzone.group3 { background-color: rgba(220, 220, 220, 0.2); }
+    .dropzone.group4 { background-color: rgba(216, 191, 216, 0.2); }
+
+    &.readonly {
+        .drag { cursor: default; }
+        .dropzone { cursor: default; }
+    }
+}
+
+/* ── ddmarker (Drag Markers onto Image) ── */
+::ng-deep .que.ddmarker {
+    .ddarea {
+        position: relative;
+        text-align: center;
+        margin: 8px 0;
+    }
+
+    .dropbackground {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        user-select: none;
+        cursor: crosshair;
+    }
+
+    .draghomes,
+    .dragitems {
+        position: relative;
+        min-height: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 6px 0;
+    }
+
+    .draghome,
+    .marker,
+    .dragitem {
+        display: inline-block;
+        padding: 4px 10px;
+        margin: 2px;
+        border: 1px solid #888;
+        border-radius: 12px;
+        background: var(--bg-2, #f0f0f0);
+        color: var(--fg-1, #333);
+        cursor: pointer;
+        user-select: none;
+        font-size: 12px;
+        z-index: 5;
+        transition: box-shadow 120ms ease;
+    }
+
+    .dragplaceholder {
+        visibility: hidden;
+        position: absolute;
+    }
+
+    .dragitem.beingdragged {
+        box-shadow: 0 2px 8px rgba(0, 120, 215, 0.5);
+        outline: 2px solid var(--accent, #0078d4);
+        z-index: 20;
+    }
+
+    .dragitem.placed {
+        position: absolute;
+        z-index: 8;
+    }
+
+    .dropzones {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+
+    .markertexts {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+
+        .markertext {
+            position: absolute;
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.75);
+            padding: 1px 4px;
+            border-radius: 2px;
+            white-space: nowrap;
+        }
+    }
+
+    &.readonly {
+        .dropbackground { cursor: default; }
+        .dragitem { cursor: default; }
+    }
+}
+
+/* ── gapselect (inline select dropdowns) ── */
+::ng-deep .que.gapselect {
+    select {
+        display: inline-block;
+        padding: 2px 6px;
+        border: 1px solid var(--border, #ccc);
+        border-radius: 4px;
+        background: var(--bg-2, #fff);
+        color: var(--fg-1, #333);
+        font-size: 13px;
+        cursor: pointer;
+        vertical-align: middle;
+    }
+}
+
 /* ============ Buttons ============ */
 .btn-primary {
     display: inline-flex;
