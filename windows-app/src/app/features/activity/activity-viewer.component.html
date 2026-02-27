@@ -52,8 +52,8 @@
         }
 
         <div class="discussion-list">
-            @for (disc of discussions(); track disc.id) {
-            <button class="card discussion-item" (click)="openDiscussion(disc.id)">
+            @for (disc of discussions(); track disc.discussion) {
+            <button class="card discussion-item" (click)="openDiscussion(disc.discussion)">
                 <div class="discussion-item__avatar">
                     @if (disc.userpictureurl) {
                     <img [src]="disc.userpictureurl" [alt]="disc.userfullname" />

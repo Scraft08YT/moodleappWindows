@@ -8,7 +8,10 @@ import { MoodleApiService } from './moodle-api.service';
 
 /** Forum discussion summary returned by `mod_forum_get_forum_discussions`. */
 export type ForumDiscussion = {
+    /** First-post ID (NOT the discussion ID). */
     id: number;
+    /** Actual discussion ID — use this when fetching posts. */
+    discussion: number;
     name: string;
     subject: string;
     message: string;

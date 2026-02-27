@@ -185,24 +185,27 @@ export class QuizService {
     /**
      * Fetches all attempts for the current user on a quiz.
      *
-     * Tries the modern `mod_quiz_get_user_quiz_attempts` first,
-     * falls back to the deprecated `mod_quiz_get_user_attempts`.
+     * Uses `mod_quiz_get_user_attempts` which is available since Moodle 3.1.
+     * The newer `mod_quiz_get_user_quiz_attempts` (Moodle 5.0+) is tried first
+     * only as a future-proof measure.
      */
     async getUserAttempts(
         quizId: number,
         status: 'all' | 'finished' | 'unfinished' = 'all',
     ): Promise<QuizAttempt[]> {
+        // Use legacy endpoint first — available on Moodle 3.1+.
+        // The newer mod_quiz_get_user_quiz_attempts is only on Moodle 5.0+.
         try {
             const res = await this.api.call<RawUserAttemptsResponse>(
-                'mod_quiz_get_user_quiz_attempts',
-                { quizid: quizId, status, includepreviews: false },
+                'mod_quiz_get_user_attempts',
+                { quizid: quizId, status, includepreviews: 0 },
             );
             return res.attempts ?? [];
         } catch {
-            // Legacy fallback
+            // Moodle 5.0+ fallback
             const res = await this.api.call<RawUserAttemptsResponse>(
-                'mod_quiz_get_user_attempts',
-                { quizid: quizId, status, includepreviews: false },
+                'mod_quiz_get_user_quiz_attempts',
+                { quizid: quizId, status, includepreviews: 0 },
             );
             return res.attempts ?? [];
         }
@@ -212,7 +215,7 @@ export class QuizService {
     async startAttempt(quizId: number, forceNew = false): Promise<QuizAttempt> {
         const res = await this.api.call<RawStartAttemptResponse>(
             'mod_quiz_start_attempt',
-            { quizid: quizId, forcenew: forceNew },
+            { quizid: quizId, forcenew: forceNew ? 1 : 0 },
             { skipCache: true },
         );
         return res.attempt;
@@ -280,8 +283,8 @@ export class QuizService {
             {
                 attemptid: attemptId,
                 data: dataArray,
-                finishattempt: finishAttempt,
-                timeup: false,
+                finishattempt: finishAttempt ? 1 : 0,
+                timeup: 0,
             },
             { skipCache: true },
         );

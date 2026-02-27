@@ -763,16 +763,29 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             }
             this.quiz.set(quiz);
 
-            // Load access info, attempts, and best grade in parallel
-            const [access, attempts, bestGrade] = await Promise.all([
+            // Load access info, attempts, and best grade independently
+            // so a single failure doesn't block everything.
+            const [accessResult, attemptsResult, bestGradeResult] = await Promise.allSettled([
                 this.quizService.getAccessInformation(quiz.id),
                 this.quizService.getUserAttempts(quiz.id),
                 this.quizService.getUserBestGrade(quiz.id),
             ]);
 
-            this.quizAccessInfo.set(access);
-            this.quizAttempts.set(attempts);
-            this.quizBestGrade.set(bestGrade);
+            if (accessResult.status === 'fulfilled') {
+                this.quizAccessInfo.set(accessResult.value);
+            } else {
+                console.warn('Quiz access info failed:', accessResult.reason);
+            }
+            if (attemptsResult.status === 'fulfilled') {
+                this.quizAttempts.set(attemptsResult.value);
+            } else {
+                console.warn('Quiz attempts failed:', attemptsResult.reason);
+            }
+            if (bestGradeResult.status === 'fulfilled') {
+                this.quizBestGrade.set(bestGradeResult.value);
+            } else {
+                console.warn('Quiz best grade failed:', bestGradeResult.reason);
+            }
         } catch (err) {
             console.error('Failed to load quiz:', err);
             this.quizError.set('Quiz konnte nicht geladen werden.');
