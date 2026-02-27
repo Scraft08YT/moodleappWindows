@@ -140,6 +140,47 @@ export class MoodleApiService {
         return `${fileUrl}${separator}token=${this.token}`;
     }
 
+    /**
+     * Rewrites pluginfile URLs in HTML content to include the WS token.
+     *
+     * Moodle's `external_format_text()` generates `webservice/pluginfile.php` URLs
+     * in HTML content, but those URLs require the WS token as a query parameter
+     * for authentication. This method appends the token to all such URLs while
+     * leaving `tokenpluginfile.php` URLs untouched (they already carry embedded auth).
+     *
+     * Also replaces any remaining `@@PLUGINFILE@@` placeholders as a safety net
+     * for older Moodle versions.
+     *
+     * @param html  Raw HTML string from the Moodle WS response
+     * @returns HTML with authenticated pluginfile URLs
+     */
+    rewritePluginfileUrls(html: string): string {
+        if (!html || !this.siteUrl || !this.token) return html;
+
+        // Safety net: replace @@PLUGINFILE@@ placeholders (older Moodle)
+        if (html.includes('@@PLUGINFILE@@')) {
+            html = html.replace(
+                /@@PLUGINFILE@@/g,
+                `${this.siteUrl}/webservice/pluginfile.php`,
+            );
+        }
+
+        // Append token to pluginfile.php URLs from this Moodle site.
+        // Matches /pluginfile.php/ and /webservice/pluginfile.php/ but
+        // NOT /tokenpluginfile.php/ (which carries auth in the URL path).
+        const escapedSite = this.siteUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(
+            `(${escapedSite}/(?:webservice/)?pluginfile\\.php/[^"'\\s<>]*)`,
+            'gi',
+        );
+
+        return html.replace(re, (url) => {
+            if (url.includes('token=')) return url;
+            const sep = url.includes('?') ? '&' : '?';
+            return `${url}${sep}token=${this.token}`;
+        });
+    }
+
     /** Returns the current session info for direct upload endpoints. */
     getSession(): { siteUrl: string; token: string } | null {
         if (!this.siteUrl || !this.token) return null;

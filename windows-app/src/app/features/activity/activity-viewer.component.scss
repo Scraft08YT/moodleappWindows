@@ -836,6 +836,490 @@
     }
 }
 
+/* ============ Assignment Comments ============ */
+.assign-comments {
+    padding: 0;
+    overflow: hidden;
+
+    &__toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 14px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--fg-1);
+        text-align: left;
+
+        &:hover { background: var(--hover); }
+    }
+
+    &__count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    &__chevron {
+        margin-left: auto;
+        transition: transform 200ms ease;
+
+        &--open { transform: rotate(180deg); }
+    }
+
+    &__body {
+        padding: 0 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        animation: fadeIn 150ms ease;
+    }
+
+    &__item {
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: var(--bg-2);
+    }
+
+    &__meta {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin-bottom: 4px;
+    }
+
+    &__author {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--fg-1);
+    }
+
+    &__time {
+        font-size: 11px;
+    }
+
+    &__content {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--fg-2);
+    }
+
+    &__form {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+
+        textarea { flex: 1; }
+    }
+}
+
+/* ============ Quiz ============ */
+.quiz-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quiz-error {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--status-overdue, #d32f2f);
+    background: rgba(211, 47, 47, 0.08);
+    border: 1px solid rgba(211, 47, 47, 0.2);
+    border-radius: 8px;
+}
+
+.quiz-intro {
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--fg-2);
+}
+
+.quiz-section-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg-1);
+}
+
+.quiz-details {
+    padding: 20px 24px;
+
+    &__table {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+
+        &:last-child { border-bottom: none; }
+    }
+
+    &__label {
+        font-size: 13px;
+        color: var(--fg-3);
+    }
+
+    &__value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--fg-1);
+    }
+}
+
+.quiz-grade {
+    padding: 20px 24px;
+
+    &__value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--grade-text, var(--accent));
+    }
+}
+
+/* Attempts table */
+.quiz-attempts {
+    padding: 20px 24px;
+
+    &__table {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    &__header {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 2px solid var(--border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--fg-3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    &__row {
+        display: flex;
+        gap: 8px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+
+        &:last-child { border-bottom: none; }
+        &--active { background: rgba(var(--accent-rgb, 0, 120, 212), 0.06); border-radius: 6px; padding: 10px 8px; }
+    }
+
+    &__col {
+        min-width: 50px;
+        font-size: 13px;
+        color: var(--fg-1);
+
+        &--grow { flex: 1; }
+    }
+
+    &__state {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &--progress {
+            background: rgba(237, 108, 2, 0.12);
+            color: var(--status-draft);
+        }
+        &--finished {
+            background: rgba(46, 125, 50, 0.12);
+            color: var(--status-submitted);
+        }
+    }
+}
+
+.quiz-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.quiz-access-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Timer */
+.quiz-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--bg-2);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fg-1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    &--warn {
+        background: rgba(211, 47, 47, 0.12);
+        color: var(--status-overdue);
+        animation: pulse 1s ease infinite;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.quiz-page-indicator {
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+/* Question container — inherits Moodle's rendered HTML */
+.quiz-questions {
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.6;
+
+    // Style Moodle's rendered question HTML
+    :deep(.formulation) {
+        margin-bottom: 16px;
+    }
+
+    :deep(.qtext) {
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+
+    :deep(.answer) {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 120ms ease;
+
+            &:hover { background: var(--hover); }
+        }
+    }
+
+    :deep(input[type="radio"]),
+    :deep(input[type="checkbox"]) {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+    }
+
+    :deep(input[type="text"]),
+    :deep(textarea),
+    :deep(select) {
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-1);
+        color: var(--fg-1);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+
+        &:focus { border-color: var(--accent); }
+    }
+
+    :deep(img) {
+        max-width: 100%;
+        border-radius: 4px;
+    }
+}
+
+.quiz-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Summary */
+.quiz-summary {
+    padding: 20px 24px;
+
+    &__table {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+    }
+
+    &__header {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 2px solid var(--border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--fg-3);
+        text-transform: uppercase;
+    }
+
+    &__row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+
+        &:last-child { border-bottom: none; }
+    }
+
+    &__col {
+        min-width: 60px;
+        font-size: 13px;
+        color: var(--fg-1);
+
+        &--grow { flex: 1; }
+    }
+
+    &__status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+
+        &--complete, &--answersaved {
+            background: rgba(46, 125, 50, 0.12);
+            color: var(--status-submitted);
+        }
+        &--notyetanswered, &--todo {
+            background: rgba(237, 108, 2, 0.1);
+            color: var(--status-draft);
+        }
+        &--invalidanswer {
+            background: rgba(211, 47, 47, 0.1);
+            color: var(--status-overdue);
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+}
+
+/* Review */
+.quiz-review-grade {
+    padding: 20px 24px;
+
+    &__value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--grade-text, var(--accent));
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    &__info {
+        font-size: 13px;
+        color: var(--fg-2);
+        margin-top: 6px;
+
+        strong { color: var(--fg-1); margin-right: 4px; }
+    }
+}
+
+.quiz-review-question {
+    padding: 16px 20px;
+    border-left: 4px solid var(--border);
+
+    &--correct, &--complete {
+        border-left-color: var(--status-submitted);
+    }
+    &--incorrect, &--notanswered {
+        border-left-color: var(--status-overdue);
+    }
+    &--partiallycorrect {
+        border-left-color: var(--status-draft);
+    }
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    &__number {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg-1);
+    }
+
+    &__status {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--fg-3);
+    }
+
+    &__body {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--fg-2);
+
+        :deep(.correct) { color: var(--status-submitted); }
+        :deep(.incorrect) { color: var(--status-overdue); }
+        :deep(.partiallycorrect) { color: var(--status-draft); }
+        :deep(.feedback) {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: var(--bg-2);
+            font-size: 13px;
+        }
+        :deep(.rightanswer) {
+            margin-top: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(46, 125, 50, 0.06);
+            font-size: 13px;
+            color: var(--fg-2);
+        }
+
+        :deep(img) { max-width: 100%; border-radius: 4px; }
+        :deep(input), :deep(select), :deep(textarea) {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+    }
+}
+
 /* ============ Generic ============ */
 .generic-view {
     padding: 24px;

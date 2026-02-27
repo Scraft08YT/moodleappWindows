@@ -173,10 +173,17 @@ export class ForumService {
 
     /** Fetches all forums in a course. */
     async getForum(courseId: number): Promise<Forum[]> {
-        return this.api.call<Forum[]>(
+        const forums = await this.api.call<Forum[]>(
             'mod_forum_get_forums_by_courses',
             { courseids: [courseId] },
         );
+
+        // Rewrite pluginfile URLs in forum intros so embedded media loads
+        for (const f of forums) {
+            f.intro = this.api.rewritePluginfileUrls(f.intro ?? '');
+        }
+
+        return forums;
     }
 
     /**
@@ -198,7 +205,16 @@ export class ForumService {
             { forumid: forumId, sortorder: 4, page, perpage: perPage },
             { skipCache },
         );
-        return res.discussions ?? [];
+
+        const discussions = res.discussions ?? [];
+
+        // Authenticate avatar and message URLs
+        for (const d of discussions) {
+            d.userpictureurl = this.api.getFileUrl(d.userpictureurl ?? '');
+            d.message = this.api.rewritePluginfileUrls(d.message ?? '');
+        }
+
+        return discussions;
     }
 
     /**
@@ -284,11 +300,11 @@ export class ForumService {
             discussionid: raw.discussionid,
             parentid: parentId,
             subject: raw.subject ?? '',
-            message: raw.message ?? '',
+            message: this.api.rewritePluginfileUrls(raw.message ?? ''),
             timecreated: raw.timecreated,
             timemodified: raw.timemodified ?? raw.timecreated,
             userfullname: fullname,
-            userpictureurl: pictureUrl,
+            userpictureurl: this.api.getFileUrl(pictureUrl),
             userid: userId,
             attachment: attachments.length > 0,
             attachments,
@@ -322,11 +338,11 @@ export class ForumService {
             discussionid: raw.discussion,
             parentid: raw.parent ?? 0,
             subject: raw.subject ?? '',
-            message: raw.message ?? '',
+            message: this.api.rewritePluginfileUrls(raw.message ?? ''),
             timecreated: raw.created,
             timemodified: raw.modified ?? raw.created,
             userfullname: raw.userfullname ?? '',
-            userpictureurl: raw.userpictureurl ?? '',
+            userpictureurl: this.api.getFileUrl(raw.userpictureurl ?? ''),
             userid: raw.userid ?? 0,
             attachment: attachments.length > 0 || !!raw.attachment,
             attachments,
@@ -346,7 +362,7 @@ export class ForumService {
         return (raw ?? []).map((a) => ({
             filename: a.filename,
             filepath: a.filepath ?? '/',
-            fileurl: a.fileurl ?? a.url ?? '',
+            fileurl: this.api.getFileUrl(a.fileurl ?? a.url ?? ''),
             filesize: a.filesize ?? 0,
             mimetype: a.mimetype ?? '',
         }));

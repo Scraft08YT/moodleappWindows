@@ -1,19 +1,34 @@
-import { Component, inject, signal, computed, type OnInit } from '@angular/core';
+import { Component, inject, signal, computed, type OnInit, type OnDestroy, ViewChild, type ElementRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import { CourseService } from '../../core/services/course.service';
 import { ForumService, type ForumDiscussion, type ForumPost, type Forum } from '../../core/services/forum.service';
 import { AssignmentService, type Assignment, type SubmissionStatus, type SubmissionFile } from '../../core/services/assignment.service';
+import { QuizService, type Quiz, type QuizAttempt, type AttemptPageData, type AttemptQuestion, type AttemptSummaryQuestion, type AttemptReview, type QuizAccessInfo, type UserBestGrade } from '../../core/services/quiz.service';
 import { FileUploadService } from '../../core/services/file-upload.service';
 import { MoodleApiService } from '../../core/services/moodle-api.service';
 import { FileDownloadService } from '../../core/services/file-download.service';
 import type { CourseModule } from '../../core/models/course.model';
 
+/** Comment returned by `core_comment_get_comments`. */
+export type SubmissionComment = {
+    id: number;
+    content: string;
+    fullname: string;
+    time: string;
+    timecreated: number;
+    profileurl: string;
+    avatar: string;
+    userid: number;
+    delete?: boolean;
+};
+
 /**
  * Generic activity viewer — dispatches based on `modname` parameter.
- * Supports: forum, assign, page, url, resource, folder, book, label.
+ * Supports: forum, assign, quiz, page, url, resource, folder, book, label.
  */
 @Component({
     selector: 'app-activity-viewer',
@@ -22,15 +37,17 @@ import type { CourseModule } from '../../core/models/course.model';
     templateUrl: './activity-viewer.component.html',
     styleUrl: './activity-viewer.component.scss',
 })
-export class ActivityViewerComponent implements OnInit {
+export class ActivityViewerComponent implements OnInit, OnDestroy {
 
     private readonly route = inject(ActivatedRoute);
     private readonly courseService = inject(CourseService);
     private readonly forumService = inject(ForumService);
     private readonly assignService = inject(AssignmentService);
+    readonly quizService = inject(QuizService);
     private readonly fileUpload = inject(FileUploadService);
     private readonly api = inject(MoodleApiService);
     private readonly fileDownload = inject(FileDownloadService);
+    private readonly sanitizer = inject(DomSanitizer);
 
     // Route params
     readonly courseId = signal(0);
@@ -75,6 +92,41 @@ export class ActivityViewerComponent implements OnInit {
     readonly uploadProgress = signal('');
     readonly submitSuccess = signal('');
     readonly submitError = signal('');
+
+    // --- Assignment comments state ---
+    readonly assignComments = signal<SubmissionComment[]>([]);
+    readonly assignCommentsLoading = signal(false);
+    readonly showComments = signal(false);
+    readonly newCommentText = signal('');
+    readonly commentBusy = signal(false);
+
+    // --- Quiz state ---
+    readonly quiz = signal<Quiz | null>(null);
+    readonly quizAccessInfo = signal<QuizAccessInfo | null>(null);
+    readonly quizAttempts = signal<QuizAttempt[]>([]);
+    readonly quizBestGrade = signal<UserBestGrade | null>(null);
+    readonly quizView = signal<'info' | 'attempt' | 'summary' | 'review'>('info');
+    readonly quizLoading = signal(false);
+    readonly quizError = signal('');
+
+    // Active attempt state
+    readonly currentAttempt = signal<QuizAttempt | null>(null);
+    readonly attemptPageData = signal<AttemptPageData | null>(null);
+    readonly attemptPage = signal(0);
+    readonly attemptSummary = signal<AttemptSummaryQuestion[]>([]);
+    readonly attemptReview = signal<AttemptReview | null>(null);
+    readonly quizBusy = signal(false);
+    /** Sanitised HTML for current page questions. */
+    readonly questionsHtml = signal<SafeHtml | null>(null);
+
+    /** Timer interval handle for quiz time limit. */
+    private quizTimerInterval: ReturnType<typeof setInterval> | null = null;
+    readonly quizTimeLeft = signal(0);
+
+    /** Formatted remaining time for display. */
+    readonly quizTimeLeftFormatted = computed(() =>
+        this.quizService.formatTimeLimit(this.quizTimeLeft()),
+    );
 
     // Computed assignment helpers
     readonly hasOnlineText = computed(() => {
@@ -158,6 +210,10 @@ export class ActivityViewerComponent implements OnInit {
             }
 
             if (foundModule) {
+                // Rewrite pluginfile URLs in module description for embedded media
+                if (foundModule.description) {
+                    foundModule.description = this.api.rewritePluginfileUrls(foundModule.description);
+                }
                 this.currentModule.set(foundModule);
                 this.moduleName.set(foundModule.name);
                 this.instanceId.set(foundModule.instance);
@@ -181,6 +237,9 @@ export class ActivityViewerComponent implements OnInit {
                 break;
             case 'assign':
                 await this.loadAssignment();
+                break;
+            case 'quiz':
+                await this.loadQuiz();
                 break;
             case 'page':
                 await this.loadPage();
@@ -354,6 +413,8 @@ export class ActivityViewerComponent implements OnInit {
     private async loadAssignment(): Promise<void> {
         const assign = await this.assignService.getAssignmentByCmid(this.moduleId(), this.courseId());
         if (assign) {
+            // Rewrite pluginfile URLs in assignment description
+            assign.intro = this.api.rewritePluginfileUrls(assign.intro ?? '');
             this.assignment.set(assign);
             await this.reloadSubmissionStatus(assign.id);
         }
@@ -541,11 +602,11 @@ export class ActivityViewerComponent implements OnInit {
             );
             const page = pages.pages?.find((p) => p.coursemodule === this.moduleId());
             if (page) {
-                this.pageContent.set(page.content ?? '');
+                this.pageContent.set(this.api.rewritePluginfileUrls(page.content ?? ''));
             }
         } catch {
             // Fallback: show description
-            this.pageContent.set(mod.description ?? '');
+            this.pageContent.set(this.api.rewritePluginfileUrls(mod.description ?? ''));
         }
     }
 
@@ -615,6 +676,357 @@ export class ActivityViewerComponent implements OnInit {
         if (bytes < 1024) return `${bytes} B`;
         if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
         return `${(bytes / 1048576).toFixed(1)} MB`;
+    }
+
+    ngOnDestroy(): void {
+        this.stopQuizTimer();
+    }
+
+    // ========== Assignment Comments ==========
+
+    async toggleComments(): Promise<void> {
+        const show = !this.showComments();
+        this.showComments.set(show);
+        if (show && this.assignComments().length === 0) {
+            await this.loadAssignComments();
+        }
+    }
+
+    private async loadAssignComments(): Promise<void> {
+        const sub = this.submissionStatus()?.lastattempt?.submission;
+        if (!sub) return;
+
+        this.assignCommentsLoading.set(true);
+        try {
+            const res = await this.api.call<{ comments: SubmissionComment[]; canpost?: boolean }>(
+                'core_comment_get_comments',
+                {
+                    contextlevel: 'module',
+                    instanceid: this.moduleId(),
+                    component: 'assignsubmission_comments',
+                    itemid: sub.id,
+                    area: 'submission_comments',
+                },
+            );
+            this.assignComments.set(res.comments ?? []);
+        } catch (err) {
+            console.error('Failed to load comments:', err);
+        } finally {
+            this.assignCommentsLoading.set(false);
+        }
+    }
+
+    async addComment(): Promise<void> {
+        const text = this.newCommentText().trim();
+        const sub = this.submissionStatus()?.lastattempt?.submission;
+        if (!text || !sub) return;
+
+        this.commentBusy.set(true);
+        try {
+            await this.api.call(
+                'core_comment_add_comments',
+                {
+                    comments: [{
+                        contextlevel: 'module',
+                        instanceid: this.moduleId(),
+                        component: 'assignsubmission_comments',
+                        content: text,
+                        itemid: sub.id,
+                        area: 'submission_comments',
+                    }],
+                },
+                { skipCache: true },
+            );
+            this.newCommentText.set('');
+            await this.loadAssignComments();
+        } catch (err) {
+            console.error('Failed to add comment:', err);
+            this.submitError.set('Kommentar konnte nicht gesendet werden.');
+        } finally {
+            this.commentBusy.set(false);
+        }
+    }
+
+    // ========== Quiz ==========
+
+    private async loadQuiz(): Promise<void> {
+        try {
+            const quiz = await this.quizService.getQuizByCmid(this.moduleId(), this.courseId());
+            if (!quiz) {
+                this.quizError.set('Quiz nicht gefunden.');
+                return;
+            }
+
+            // Rewrite pluginfile URLs in quiz intro
+            if (quiz.intro) {
+                quiz.intro = this.api.rewritePluginfileUrls(quiz.intro);
+            }
+            this.quiz.set(quiz);
+
+            // Load access info, attempts, and best grade in parallel
+            const [access, attempts, bestGrade] = await Promise.all([
+                this.quizService.getAccessInformation(quiz.id),
+                this.quizService.getUserAttempts(quiz.id),
+                this.quizService.getUserBestGrade(quiz.id),
+            ]);
+
+            this.quizAccessInfo.set(access);
+            this.quizAttempts.set(attempts);
+            this.quizBestGrade.set(bestGrade);
+        } catch (err) {
+            console.error('Failed to load quiz:', err);
+            this.quizError.set('Quiz konnte nicht geladen werden.');
+        }
+    }
+
+    /** Starts a new attempt or continues an in-progress one. */
+    async startOrContinueAttempt(): Promise<void> {
+        const quiz = this.quiz();
+        if (!quiz) return;
+
+        this.quizBusy.set(true);
+        this.quizError.set('');
+        try {
+            // Check for an existing in-progress attempt
+            const attempts = await this.quizService.getUserAttempts(quiz.id, 'unfinished');
+            let attempt: QuizAttempt;
+
+            if (attempts.length > 0) {
+                attempt = attempts[0];
+            } else {
+                attempt = await this.quizService.startAttempt(quiz.id);
+            }
+
+            this.currentAttempt.set(attempt);
+            this.attemptPage.set(attempt.currentpage ?? 0);
+            await this.loadAttemptPage(attempt.id, attempt.currentpage ?? 0);
+            this.quizView.set('attempt');
+            this.startQuizTimer();
+        } catch (err) {
+            console.error('Start attempt failed:', err);
+            this.quizError.set('Versuch konnte nicht gestartet werden.');
+        } finally {
+            this.quizBusy.set(false);
+        }
+    }
+
+    /** Loads question data for a page of the current attempt. */
+    private async loadAttemptPage(attemptId: number, page: number): Promise<void> {
+        this.quizLoading.set(true);
+        try {
+            const data = await this.quizService.getAttemptData(attemptId, page);
+            this.attemptPageData.set(data);
+            this.attemptPage.set(page);
+
+            // Build combined question HTML
+            const combined = data.questions.map((q) => q.html).join('');
+            this.questionsHtml.set(this.sanitizer.bypassSecurityTrustHtml(
+                this.api.rewritePluginfileUrls(combined),
+            ));
+        } catch (err) {
+            console.error('Load attempt page failed:', err);
+            this.quizError.set('Seite konnte nicht geladen werden.');
+        } finally {
+            this.quizLoading.set(false);
+        }
+    }
+
+    /** Saves current answers and navigates to a different page. */
+    async navigateQuizPage(targetPage: number): Promise<void> {
+        const attempt = this.currentAttempt();
+        if (!attempt) return;
+
+        this.quizBusy.set(true);
+        this.quizError.set('');
+        try {
+            // Collect answers from the rendered questions
+            const container = document.querySelector('.quiz-questions') as HTMLElement | null;
+            if (container) {
+                const answers = this.quizService.collectAnswersFromContainer(container);
+                if (Object.keys(answers).length > 0) {
+                    await this.quizService.saveAttempt(attempt.id, answers);
+                }
+            }
+
+            await this.loadAttemptPage(attempt.id, targetPage);
+        } catch (err) {
+            console.error('Navigate quiz page failed:', err);
+            this.quizError.set('Seite konnte nicht gewechselt werden.');
+        } finally {
+            this.quizBusy.set(false);
+        }
+    }
+
+    /** Opens the attempt summary before final submission. */
+    async showAttemptSummary(): Promise<void> {
+        const attempt = this.currentAttempt();
+        if (!attempt) return;
+
+        this.quizBusy.set(true);
+        this.quizError.set('');
+        try {
+            // Save current page answers first
+            const container = document.querySelector('.quiz-questions') as HTMLElement | null;
+            if (container) {
+                const answers = this.quizService.collectAnswersFromContainer(container);
+                if (Object.keys(answers).length > 0) {
+                    await this.quizService.saveAttempt(attempt.id, answers);
+                }
+            }
+
+            const summary = await this.quizService.getAttemptSummary(attempt.id);
+            this.attemptSummary.set(summary);
+            this.quizView.set('summary');
+        } catch (err) {
+            console.error('Show summary failed:', err);
+            this.quizError.set('Zusammenfassung konnte nicht geladen werden.');
+        } finally {
+            this.quizBusy.set(false);
+        }
+    }
+
+    /** Submits the attempt for grading (finishes it). */
+    async submitQuizAttempt(): Promise<void> {
+        const attempt = this.currentAttempt();
+        if (!attempt) return;
+
+        this.quizBusy.set(true);
+        this.quizError.set('');
+        try {
+            await this.quizService.processAttempt(attempt.id, {}, true);
+            this.stopQuizTimer();
+
+            // Load review
+            const review = await this.quizService.getAttemptReview(attempt.id);
+            this.attemptReview.set(review);
+            this.quizView.set('review');
+
+            // Refresh attempt list
+            const quiz = this.quiz();
+            if (quiz) {
+                const [attempts, bestGrade] = await Promise.all([
+                    this.quizService.getUserAttempts(quiz.id),
+                    this.quizService.getUserBestGrade(quiz.id),
+                ]);
+                this.quizAttempts.set(attempts);
+                this.quizBestGrade.set(bestGrade);
+            }
+        } catch (err) {
+            console.error('Submit attempt failed:', err);
+            this.quizError.set('Versuch konnte nicht abgegeben werden.');
+        } finally {
+            this.quizBusy.set(false);
+        }
+    }
+
+    /** Opens the review of a finished attempt. */
+    async openAttemptReview(attemptId: number): Promise<void> {
+        this.quizLoading.set(true);
+        this.quizError.set('');
+        try {
+            const review = await this.quizService.getAttemptReview(attemptId);
+            this.attemptReview.set(review);
+            this.quizView.set('review');
+        } catch (err) {
+            console.error('Load review failed:', err);
+            this.quizError.set('Überprüfung konnte nicht geladen werden.');
+        } finally {
+            this.quizLoading.set(false);
+        }
+    }
+
+    /** Returns to the quiz info page. */
+    backToQuizInfo(): void {
+        this.quizView.set('info');
+        this.currentAttempt.set(null);
+        this.attemptPageData.set(null);
+        this.attemptReview.set(null);
+        this.attemptSummary.set([]);
+        this.questionsHtml.set(null);
+        this.quizError.set('');
+        this.stopQuizTimer();
+    }
+
+    /** Returns from summary to the attempt (continue answering). */
+    async backToAttempt(): Promise<void> {
+        const attempt = this.currentAttempt();
+        if (!attempt) return;
+
+        this.quizView.set('attempt');
+        await this.loadAttemptPage(attempt.id, this.attemptPage());
+    }
+
+    // ── Quiz timer ──────────────────────────────────────
+
+    private startQuizTimer(): void {
+        this.stopQuizTimer();
+
+        const quiz = this.quiz();
+        const attempt = this.currentAttempt();
+        if (!quiz?.timelimit || !attempt?.timestart) return;
+
+        const endTime = attempt.timestart + quiz.timelimit;
+        const updateTimer = (): void => {
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = Math.max(0, endTime - now);
+            this.quizTimeLeft.set(remaining);
+
+            if (remaining <= 0) {
+                this.stopQuizTimer();
+                // Auto-submit when time runs out
+                this.submitQuizAttempt();
+            }
+        };
+
+        updateTimer();
+        this.quizTimerInterval = setInterval(updateTimer, 1000);
+    }
+
+    private stopQuizTimer(): void {
+        if (this.quizTimerInterval) {
+            clearInterval(this.quizTimerInterval);
+            this.quizTimerInterval = null;
+        }
+    }
+
+    // ── Quiz helpers ────────────────────────────────────
+
+    getQuizGradeDisplay(): string {
+        const quiz = this.quiz();
+        const best = this.quizBestGrade();
+        if (!best?.hasgrade || best.grade === undefined || !quiz?.grade) return 'Noch nicht bewertet';
+        const pct = (best.grade / quiz.grade) * 100;
+        return `${best.grade.toFixed(quiz.decimalpoints ?? 2)} / ${quiz.grade} (${pct.toFixed(1)}%)`;
+    }
+
+    getAttemptGradeDisplay(attempt: QuizAttempt): string {
+        const quiz = this.quiz();
+        if (attempt.sumgrades == null || !quiz?.sumgrades || !quiz.grade) return '-';
+        const rescaled = (attempt.sumgrades / quiz.sumgrades) * quiz.grade;
+        return rescaled.toFixed(quiz.decimalpoints ?? 2);
+    }
+
+    canStartNewAttempt(): boolean {
+        const quiz = this.quiz();
+        const access = this.quizAccessInfo();
+        if (!quiz || !access?.canattempt) return false;
+        if (access.preventaccessreasons?.length) return false;
+        if (quiz.attempts > 0 && this.quizAttempts().filter((a) => a.state === 'finished').length >= quiz.attempts) {
+            return false;
+        }
+        return true;
+    }
+
+    hasInProgressAttempt(): boolean {
+        return this.quizAttempts().some((a) => a.state === 'inprogress');
+    }
+
+    /** Total number of pages based on layout string. */
+    getQuizPageCount(): number {
+        const attempt = this.currentAttempt();
+        if (!attempt?.layout) return 1;
+        // Layout is comma-separated slot numbers with 0 as page delimiter
+        return attempt.layout.split(',').filter((s) => s.trim() === '0').length + 1;
     }
 }
 

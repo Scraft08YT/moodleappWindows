@@ -59,6 +59,12 @@ export class OfflineCacheService {
         'mod_forum_get_forum_discussions': 2 * 60 * 1000,    // 2 min – discussions change frequently
         'mod_forum_get_discussion_posts': 60 * 1000,         // 1 min – posts change frequently
         'mod_forum_get_forum_discussion_posts': 60 * 1000,   // 1 min – legacy posts endpoint
+        'mod_quiz_get_quizzes_by_courses': 10 * 60 * 1000,   // 10 min – quiz metadata rarely changes
+        'mod_quiz_get_quiz_access_information': 5 * 60 * 1000, // 5 min
+        'mod_quiz_get_user_attempts': 60 * 1000,             // 1 min – attempts change during quiz
+        'mod_quiz_get_user_quiz_attempts': 60 * 1000,        // 1 min
+        'mod_quiz_get_user_best_grade': 2 * 60 * 1000,       // 2 min
+        'core_comment_get_comments': 2 * 60 * 1000,          // 2 min – submission comments
     };
 
     constructor(private readonly storage: StorageService) {
