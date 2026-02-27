@@ -911,6 +911,10 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
             // Load review
             const review = await this.quizService.getAttemptReview(attempt.id);
+            // Rewrite pluginfile URLs in review question HTML
+            for (const q of review.questions) {
+                q.html = this.api.rewritePluginfileUrls(q.html);
+            }
             this.attemptReview.set(review);
             this.quizView.set('review');
 
@@ -938,6 +942,10 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
         this.quizError.set('');
         try {
             const review = await this.quizService.getAttemptReview(attemptId);
+            // Rewrite pluginfile URLs in review question HTML
+            for (const q of review.questions) {
+                q.html = this.api.rewritePluginfileUrls(q.html);
+            }
             this.attemptReview.set(review);
             this.quizView.set('review');
         } catch (err) {

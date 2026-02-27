@@ -1105,44 +1105,162 @@
     font-size: 14px;
     line-height: 1.6;
 
-    // Style Moodle's rendered question HTML
+    // ── Moodle question wrapper (.que) ──
+    :deep(.que) {
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+
+        &:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    }
+
+    // ── Question info sidebar (number, grade, flag) ──
+    :deep(.info) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: var(--fg-3);
+
+        .questionflag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+
+            // Moodle renders a form with a big image — tame it
+            input[type="image"],
+            img {
+                width: 16px !important;
+                height: 16px !important;
+                vertical-align: middle;
+                opacity: 0.6;
+                cursor: pointer;
+                transition: opacity 120ms;
+
+                &:hover { opacity: 1; }
+            }
+
+            // Hide the legacy toggle label
+            .questionflagtext { display: none; }
+        }
+
+        // State label
+        .state {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-2);
+        }
+
+        // Grade text
+        .grade {
+            font-size: 12px;
+        }
+    }
+
+    // ── Content area ──
+    :deep(.content) {
+        padding: 0;
+    }
+
+    // ── Formulation (question body) ──
     :deep(.formulation) {
         margin-bottom: 16px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        background: var(--bg-2);
     }
 
     :deep(.qtext) {
         margin-bottom: 12px;
         font-weight: 500;
+        color: var(--fg-1);
+
+        p { margin: 4px 0; }
     }
 
+    // ── Answer blocks ──
+    :deep(.ablock) {
+        margin-top: 8px;
+    }
+
+    // Multi-choice answer list
     :deep(.answer) {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
 
-        label {
+        // Individual answer option (div wrapping label)
+        > div {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             padding: 8px 12px;
             border-radius: 6px;
-            cursor: pointer;
             transition: background 120ms ease;
 
             &:hover { background: var(--hover); }
+
+            // Correct/incorrect highlighting
+            &.correct { background: rgba(46, 125, 50, 0.08); }
+            &.incorrect { background: rgba(211, 47, 47, 0.06); }
+        }
+
+        label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 0;
         }
     }
 
+    // ── Matching question table ──
+    :deep(table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 14px;
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg-1);
+        }
+
+        th {
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--fg-3);
+            background: var(--bg-2);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--hover); }
+
+        // Correct/incorrect row highlights
+        tr.correct td { background: rgba(46, 125, 50, 0.06); }
+        tr.incorrect td { background: rgba(211, 47, 47, 0.04); }
+    }
+
+    // ── Form controls ──
     :deep(input[type="radio"]),
     :deep(input[type="checkbox"]) {
         accent-color: var(--accent);
         width: 16px;
         height: 16px;
+        flex-shrink: 0;
+        margin-top: 2px;
     }
 
     :deep(input[type="text"]),
-    :deep(textarea),
-    :deep(select) {
+    :deep(textarea) {
         padding: 6px 10px;
         border: 1px solid var(--border);
         border-radius: 6px;
@@ -1151,13 +1269,168 @@
         font-size: 14px;
         font-family: inherit;
         outline: none;
+        max-width: 100%;
 
         &:focus { border-color: var(--accent); }
     }
 
+    :deep(select) {
+        appearance: auto;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-1);
+        color: var(--fg-1);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        cursor: pointer;
+        max-width: 280px;
+
+        &:focus { border-color: var(--accent); }
+    }
+
+    // ── Feedback areas ──
+    :deep(.outcome) {
+        margin-top: 12px;
+    }
+
+    :deep(.feedback),
+    :deep(.specificfeedback) {
+        margin-top: 8px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: var(--bg-2);
+        font-size: 13px;
+        color: var(--fg-2);
+    }
+
+    :deep(.generalfeedback) {
+        margin-top: 8px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: rgba(0, 120, 212, 0.06);
+        font-size: 13px;
+        color: var(--fg-2);
+    }
+
+    :deep(.rightanswer) {
+        margin-top: 8px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: rgba(46, 125, 50, 0.06);
+        font-size: 13px;
+        color: var(--fg-2);
+    }
+
+    :deep(.numpartscorrect) {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--fg-3);
+    }
+
+    // ── Correct/incorrect markers ──
+    :deep(.correct) { color: var(--status-submitted); }
+    :deep(.incorrect) { color: var(--status-overdue); }
+    :deep(.partiallycorrect) { color: var(--status-draft); }
+
+    :deep(.correctness) {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 6px;
+        vertical-align: middle;
+
+        &.correct {
+            background: rgba(46, 125, 50, 0.12);
+            color: var(--status-submitted);
+        }
+        &.incorrect {
+            background: rgba(211, 47, 47, 0.1);
+            color: var(--status-overdue);
+        }
+        &.partiallycorrect {
+            background: rgba(237, 108, 2, 0.1);
+            color: var(--status-draft);
+        }
+    }
+
+    // Tick/cross icons next to answers
+    :deep(.icon.fa-check),
+    :deep(.icon.fa-times),
+    :deep(.fa-check),
+    :deep(.fa-times),
+    :deep(.fa-remove) {
+        font-size: 14px;
+        margin-left: 4px;
+    }
+
+    // ── Images ──
     :deep(img) {
         max-width: 100%;
         border-radius: 4px;
+        height: auto;
+    }
+
+    // ── Drag & drop / sortable placeholders ──
+    :deep(.draghome),
+    :deep(.droptarget),
+    :deep(.drop),
+    :deep(.place) {
+        display: inline-block;
+        padding: 4px 10px;
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        background: var(--bg-2);
+        min-width: 60px;
+        min-height: 28px;
+        vertical-align: middle;
+    }
+
+    // ── Hidden elements Moodle includes ──
+    :deep(.validationerror) {
+        color: var(--status-overdue);
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    :deep(.accesshide),
+    :deep(.sr-only) {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
+
+    // Links
+    :deep(a) {
+        color: var(--accent);
+        text-decoration: none;
+
+        &:hover { text-decoration: underline; }
+    }
+
+    // Moodle buttons (rendered as <input type="submit">)
+    :deep(input[type="submit"]),
+    :deep(button:not(.btn-primary):not(.btn-secondary):not(.btn-subtle)) {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-2);
+        color: var(--fg-1);
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 120ms ease;
+
+        &:hover { background: var(--hover); }
     }
 }
 
@@ -1293,29 +1566,277 @@
         line-height: 1.6;
         color: var(--fg-2);
 
+        // ── Question info line (points, state, flag) ──
+        :deep(.info) {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--fg-3);
+
+            .questionflag {
+                display: inline-flex;
+                align-items: center;
+
+                input[type="image"],
+                img {
+                    width: 16px !important;
+                    height: 16px !important;
+                    vertical-align: middle;
+                    opacity: 0.5;
+                }
+
+                .questionflagtext { display: none; }
+            }
+
+            .state {
+                font-size: 12px;
+                font-weight: 500;
+                padding: 2px 8px;
+                border-radius: 10px;
+                background: var(--bg-2);
+            }
+        }
+
+        // ── Question formulation ──
+        :deep(.formulation) {
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: var(--bg-2);
+            margin-bottom: 12px;
+        }
+
+        :deep(.qtext) {
+            font-weight: 500;
+            color: var(--fg-1);
+            margin-bottom: 10px;
+
+            p { margin: 4px 0; }
+        }
+
+        :deep(.ablock) {
+            margin-top: 8px;
+        }
+
+        // ── Answer options ──
+        :deep(.answer) {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            > div {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 6px 10px;
+                border-radius: 6px;
+
+                &.correct { background: rgba(46, 125, 50, 0.08); }
+                &.incorrect { background: rgba(211, 47, 47, 0.06); }
+            }
+
+            label {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                flex: 1;
+                min-width: 0;
+            }
+        }
+
+        // ── Tables (matching questions) ──
+        :deep(table) {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 14px;
+
+            th, td {
+                padding: 8px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+                color: var(--fg-1);
+            }
+
+            th {
+                font-weight: 600;
+                font-size: 12px;
+                text-transform: uppercase;
+                color: var(--fg-3);
+                background: var(--bg-2);
+            }
+
+            tr:last-child td { border-bottom: none; }
+            tr.correct td { background: rgba(46, 125, 50, 0.06); }
+            tr.incorrect td { background: rgba(211, 47, 47, 0.04); }
+        }
+
+        // ── Form controls (disabled in review) ──
+        :deep(input[type="radio"]),
+        :deep(input[type="checkbox"]) {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            pointer-events: none;
+        }
+
+        :deep(input[type="text"]),
+        :deep(textarea) {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-1);
+            color: var(--fg-1);
+            font-size: 14px;
+            font-family: inherit;
+            pointer-events: none;
+            opacity: 0.85;
+            max-width: 100%;
+        }
+
+        :deep(select) {
+            appearance: auto;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-1);
+            color: var(--fg-1);
+            font-size: 14px;
+            font-family: inherit;
+            pointer-events: none;
+            opacity: 0.85;
+            max-width: 280px;
+        }
+
+        // ── Correctness badges ──
         :deep(.correct) { color: var(--status-submitted); }
         :deep(.incorrect) { color: var(--status-overdue); }
         :deep(.partiallycorrect) { color: var(--status-draft); }
-        :deep(.feedback) {
-            margin-top: 8px;
-            padding: 8px 12px;
+
+        :deep(.correctness) {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+
+            &.correct {
+                background: rgba(46, 125, 50, 0.12);
+                color: var(--status-submitted);
+            }
+            &.incorrect {
+                background: rgba(211, 47, 47, 0.1);
+                color: var(--status-overdue);
+            }
+            &.partiallycorrect {
+                background: rgba(237, 108, 2, 0.1);
+                color: var(--status-draft);
+            }
+        }
+
+        // ── Feedback blocks ──
+        :deep(.feedback),
+        :deep(.specificfeedback) {
+            margin-top: 10px;
+            padding: 10px 14px;
             border-radius: 6px;
             background: var(--bg-2);
             font-size: 13px;
         }
+
+        :deep(.generalfeedback) {
+            margin-top: 8px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(0, 120, 212, 0.06);
+            font-size: 13px;
+        }
+
         :deep(.rightanswer) {
-            margin-top: 6px;
-            padding: 8px 12px;
+            margin-top: 8px;
+            padding: 10px 14px;
             border-radius: 6px;
             background: rgba(46, 125, 50, 0.06);
             font-size: 13px;
             color: var(--fg-2);
         }
 
-        :deep(img) { max-width: 100%; border-radius: 4px; }
-        :deep(input), :deep(select), :deep(textarea) {
+        :deep(.numpartscorrect) {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--fg-3);
+        }
+
+        // ── Outcome block (wraps feedback + rightanswer) ──
+        :deep(.outcome) {
+            margin-top: 12px;
+        }
+
+        // ── Images ──
+        :deep(img) {
+            max-width: 100%;
+            border-radius: 4px;
+            height: auto;
+        }
+
+        // ── Hide screen-reader-only elements ──
+        :deep(.accesshide),
+        :deep(.sr-only) {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+        }
+
+        // Drag & drop placeholders
+        :deep(.draghome),
+        :deep(.droptarget),
+        :deep(.drop),
+        :deep(.place) {
+            display: inline-block;
+            padding: 4px 10px;
+            border: 1px dashed var(--border);
+            border-radius: 4px;
+            background: var(--bg-2);
+            min-width: 60px;
+            min-height: 28px;
+            vertical-align: middle;
+        }
+
+        :deep(.validationerror) {
+            color: var(--status-overdue);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        // Links
+        :deep(a) {
+            color: var(--accent);
+            text-decoration: none;
+            &:hover { text-decoration: underline; }
+        }
+
+        // Moodle submit buttons in review (shouldn't normally appear, but safety)
+        :deep(input[type="submit"]),
+        :deep(button) {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-2);
+            color: var(--fg-1);
+            font-size: 13px;
+            font-family: inherit;
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 0.7;
         }
     }
 }
