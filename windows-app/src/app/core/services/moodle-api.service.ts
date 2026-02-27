@@ -34,10 +34,17 @@ export class MoodleApiService {
      *
      * @param wsFunction  WS function name, e.g. `core_course_get_contents`
      * @param params      Additional parameters as key-value pairs
+     * @param options      Optional call settings
+     * @param options.skipCache  When true, bypasses the fresh-cache check and always fetches from the network.
+     *                          The network response is still cached for future calls.
      * @returns The parsed JSON response
      * @throws Error if the response contains an `exception` or `errorcode`
      */
-    async call<T>(wsFunction: string, params: Record<string, unknown> = {}): Promise<T> {
+    async call<T>(
+        wsFunction: string,
+        params: Record<string, unknown> = {},
+        options?: { skipCache?: boolean },
+    ): Promise<T> {
         if (!this.siteUrl || !this.token) {
             throw new Error('API not configured. Call AuthService.login() first.');
         }
@@ -50,8 +57,10 @@ export class MoodleApiService {
         }
 
         // Check fresh cache first to avoid redundant network calls
-        const freshCached = await this.offlineCache.get<T>(wsFunction, params);
-        if (freshCached !== null) return freshCached;
+        if (!options?.skipCache) {
+            const freshCached = await this.offlineCache.get<T>(wsFunction, params);
+            if (freshCached !== null) return freshCached;
+        }
 
         try {
             const data = await this.fetchFromNetwork<T>(wsFunction, params);

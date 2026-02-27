@@ -68,20 +68,39 @@ export class ForumService {
         );
     }
 
-    /** Fetches discussions for a forum. */
-    async getDiscussions(forumId: number, page = 0, perPage = 25): Promise<ForumDiscussion[]> {
+    /**
+     * Fetches discussions for a forum.
+     *
+     * @param forumId   The forum instance ID.
+     * @param page      Page index (0-based).
+     * @param perPage   Items per page.
+     * @param skipCache When true, bypasses the response cache and fetches fresh data from the network.
+     */
+    async getDiscussions(
+        forumId: number,
+        page = 0,
+        perPage = 25,
+        skipCache = false,
+    ): Promise<ForumDiscussion[]> {
         const res = await this.api.call<{ discussions: ForumDiscussion[] }>(
             'mod_forum_get_forum_discussions',
             { forumid: forumId, sortorder: 4, page, perpage: perPage },
+            { skipCache },
         );
         return res.discussions ?? [];
     }
 
-    /** Fetches posts of a discussion. */
-    async getDiscussionPosts(discussionId: number): Promise<ForumPost[]> {
+    /**
+     * Fetches posts of a discussion.
+     *
+     * @param discussionId The discussion ID.
+     * @param skipCache    When true, bypasses the response cache.
+     */
+    async getDiscussionPosts(discussionId: number, skipCache = false): Promise<ForumPost[]> {
         const res = await this.api.call<{ posts: ForumPost[] }>(
             'mod_forum_get_discussion_posts',
             { discussionid: discussionId, sortby: 'created', sortdirection: 'ASC' },
+            { skipCache },
         );
         return this.buildPostTree(res.posts ?? []);
     }

@@ -1,6 +1,6 @@
 {
     "productName": "Moodle Desktop",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "identifier": "com.moodle.desktop",
     "build": {
         "frontendDist": "../dist/moodle-desktop/browser",

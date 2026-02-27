@@ -200,12 +200,17 @@ export class ActivityViewerComponent implements OnInit {
     // ========== Forum ==========
 
     private async loadForum(): Promise<void> {
-        const forums = await this.forumService.getForum(this.courseId());
-        const f = forums.find((fo) => fo.id === this.instanceId());
-        if (f) {
-            this.forum.set(f);
-            const discussions = await this.forumService.getDiscussions(f.id);
-            this.discussions.set(discussions);
+        try {
+            const forums = await this.forumService.getForum(this.courseId());
+            const f = forums.find((fo) => fo.id === this.instanceId());
+            if (f) {
+                this.forum.set(f);
+                const discussions = await this.forumService.getDiscussions(f.id, 0, 25, true);
+                this.discussions.set(discussions);
+            }
+        } catch (err) {
+            console.error('Failed to load forum:', err);
+            this.error.set('Forum konnte nicht geladen werden.');
         }
     }
 
@@ -213,7 +218,7 @@ export class ActivityViewerComponent implements OnInit {
         this.selectedDiscussion.set(discussionId);
         this.postsLoading.set(true);
         try {
-            const posts = await this.forumService.getDiscussionPosts(discussionId);
+            const posts = await this.forumService.getDiscussionPosts(discussionId, true);
             this.posts.set(posts);
         } catch (err) {
             console.error('Failed to load posts:', err);
@@ -244,10 +249,10 @@ export class ActivityViewerComponent implements OnInit {
 
         try {
             await this.forumService.addReply(postId, 'Re: Antwort', text);
-            // Reload posts
+            // Reload posts – skip cache to ensure fresh data after mutation
             const discId = this.selectedDiscussion();
             if (discId) {
-                const posts = await this.forumService.getDiscussionPosts(discId);
+                const posts = await this.forumService.getDiscussionPosts(discId, true);
                 this.posts.set(posts);
             }
             this.replyingTo.set(null);
@@ -270,8 +275,8 @@ export class ActivityViewerComponent implements OnInit {
 
         try {
             await this.forumService.addDiscussion(this.forum()!.id, subject, message);
-            // Reload discussions
-            const discussions = await this.forumService.getDiscussions(this.forum()!.id);
+            // Reload discussions – skip cache to ensure the new discussion appears
+            const discussions = await this.forumService.getDiscussions(this.forum()!.id, 0, 25, true);
             this.discussions.set(discussions);
             this.showNewDiscussion.set(false);
         } catch (err) {

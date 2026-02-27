@@ -55,6 +55,9 @@ export class OfflineCacheService {
         'core_message_get_conversations': 5 * 60 * 1000,
         'core_user_get_users_by_field': 60 * 60 * 1000,
         'core_files_get_files': 30 * 60 * 1000,
+        'mod_forum_get_forums_by_courses': 5 * 60 * 1000,    // 5 min
+        'mod_forum_get_forum_discussions': 2 * 60 * 1000,    // 2 min – discussions change frequently
+        'mod_forum_get_discussion_posts': 60 * 1000,         // 1 min – posts change frequently
     };
 
     constructor(private readonly storage: StorageService) {
