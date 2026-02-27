@@ -644,7 +644,7 @@
                 <span class="quiz-review-question__number">Frage {{ q.number }}</span>
                 <span class="quiz-review-question__status">{{ q.status }}</span>
             </div>
-            <div class="quiz-review-question__body" [innerHTML]="q.html"></div>
+            <div class="quiz-review-question__body" [innerHTML]="$any(q).safeHtml ?? q.html"></div>
         </div>
         }
         }
