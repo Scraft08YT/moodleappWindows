@@ -52,6 +52,15 @@
     color: var(--fg-2);
 }
 
+.forum-error {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--status-overdue, #d32f2f);
+    background: rgba(211, 47, 47, 0.08);
+    border: 1px solid rgba(211, 47, 47, 0.2);
+    border-radius: 8px;
+}
+
 .forum-actions {
     display: flex;
     gap: 8px;
@@ -197,7 +206,32 @@
     }
 
     &__actions {
+        display: flex;
+        gap: 4px;
         margin-top: 8px;
+    }
+
+    &__action--danger {
+        color: var(--status-overdue, #d32f2f) !important;
+
+        &:hover { background: rgba(211, 47, 47, 0.08); }
+    }
+
+    &__edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--bg-2);
+        animation: fadeIn 150ms ease;
+    }
+
+    &__edit-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
     }
 
     &__reply-form {

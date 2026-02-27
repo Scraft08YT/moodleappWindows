@@ -29,6 +29,10 @@
         <div class="card forum-intro" [innerHTML]="forum()!.intro"></div>
         }
 
+        @if (forumError()) {
+        <div class="card forum-error">⚠️ {{ forumError() }}</div>
+        }
+
         @if (selectedDiscussion() === null) {
         <!-- Discussion List -->
         <div class="forum-actions">
@@ -82,7 +86,13 @@
 
         @if (postsLoading()) {
         <div class="card">
-            <div class="skeleton" style="height: 60px;"></div>
+            <div class="skeleton" style="height: 24px; width: 50%;"></div>
+            <div class="skeleton" style="height: 16px; width: 80%; margin-top: 10px;"></div>
+            <div class="skeleton" style="height: 60px; width: 100%; margin-top: 10px;"></div>
+        </div>
+        } @else if (posts().length === 0) {
+        <div class="card" style="padding: 20px;">
+            <p class="text-muted">Keine Beiträge in dieser Diskussion.</p>
         </div>
         } @else {
         <div class="post-list">
@@ -468,6 +478,9 @@
                 <span class="post__time text-muted">{{ formatTimestamp(post.timecreated) | date:'dd.MM.yyyy HH:mm' }}</span>
             </div>
         </div>
+
+        <!-- Normal view -->
+        @if (editingPostId() !== post.id) {
         <div class="post__subject">{{ post.subject }}</div>
         <div class="post__body" [innerHTML]="post.message"></div>
 
@@ -480,8 +493,32 @@
         }
 
         <div class="post__actions">
-            <button class="btn-subtle" (click)="startReply(post.id)">Antworten</button>
+            @if (post.canReply) {
+            <button class="btn-subtle" (click)="startReply(post.id)">💬 Antworten</button>
+            }
+            @if (post.canEdit) {
+            <button class="btn-subtle" (click)="startEditPost(post)">✏️ Bearbeiten</button>
+            }
+            @if (post.canDelete) {
+            <button class="btn-subtle post__action--danger" (click)="deletePost(post.id)" [disabled]="deleteBusy() === post.id">
+                @if (deleteBusy() === post.id) { Löscht... } @else { 🗑️ Löschen }
+            </button>
+            }
         </div>
+        } @else {
+        <!-- Edit mode -->
+        <div class="post__edit-form">
+            <input class="form-input" placeholder="Betreff" [ngModel]="editSubject()" (ngModelChange)="editSubject.set($event)" />
+            <textarea class="form-input form-textarea" rows="5" placeholder="Nachricht" [ngModel]="editMessage()"
+                (ngModelChange)="editMessage.set($event)"></textarea>
+            <div class="post__edit-actions">
+                <button class="btn-secondary" (click)="cancelEdit()" [disabled]="editBusy()">Abbrechen</button>
+                <button class="btn-primary" (click)="saveEdit(post.id)" [disabled]="editBusy() || !editSubject() || !editMessage()">
+                    @if (editBusy()) { Speichert... } @else { Speichern }
+                </button>
+            </div>
+        </div>
+        }
 
         @if (replyingTo() === post.id) {
         <div class="post__reply-form">

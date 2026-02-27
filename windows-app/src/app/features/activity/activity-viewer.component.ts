@@ -57,6 +57,12 @@ export class ActivityViewerComponent implements OnInit {
     readonly newDiscSubject = signal('');
     readonly newDiscMessage = signal('');
     readonly showNewDiscussion = signal(false);
+    readonly editingPostId = signal<number | null>(null);
+    readonly editSubject = signal('');
+    readonly editMessage = signal('');
+    readonly editBusy = signal(false);
+    readonly deleteBusy = signal<number | null>(null);
+    readonly forumError = signal('');
 
     // --- Assignment state ---
     readonly assignment = signal<Assignment | null>(null);
@@ -217,25 +223,38 @@ export class ActivityViewerComponent implements OnInit {
     async openDiscussion(discussionId: number): Promise<void> {
         this.selectedDiscussion.set(discussionId);
         this.postsLoading.set(true);
+        this.forumError.set('');
         try {
             const posts = await this.forumService.getDiscussionPosts(discussionId, true);
             this.posts.set(posts);
         } catch (err) {
             console.error('Failed to load posts:', err);
+            this.forumError.set('Beiträge konnten nicht geladen werden.');
         } finally {
             this.postsLoading.set(false);
         }
+    }
+
+    /** Reloads the current discussion's posts from the server. */
+    private async reloadPosts(): Promise<void> {
+        const discId = this.selectedDiscussion();
+        if (!discId) return;
+        const posts = await this.forumService.getDiscussionPosts(discId, true);
+        this.posts.set(posts);
     }
 
     backToDiscussions(): void {
         this.selectedDiscussion.set(null);
         this.posts.set([]);
         this.replyingTo.set(null);
+        this.editingPostId.set(null);
+        this.forumError.set('');
     }
 
     startReply(postId: number): void {
         this.replyingTo.set(postId);
         this.replyText.set('');
+        this.editingPostId.set(null);
     }
 
     cancelReply(): void {
@@ -249,16 +268,12 @@ export class ActivityViewerComponent implements OnInit {
 
         try {
             await this.forumService.addReply(postId, 'Re: Antwort', text);
-            // Reload posts – skip cache to ensure fresh data after mutation
-            const discId = this.selectedDiscussion();
-            if (discId) {
-                const posts = await this.forumService.getDiscussionPosts(discId, true);
-                this.posts.set(posts);
-            }
+            await this.reloadPosts();
             this.replyingTo.set(null);
             this.replyText.set('');
         } catch (err) {
             console.error('Reply failed:', err);
+            this.forumError.set('Antwort konnte nicht gesendet werden.');
         }
     }
 
@@ -275,12 +290,62 @@ export class ActivityViewerComponent implements OnInit {
 
         try {
             await this.forumService.addDiscussion(this.forum()!.id, subject, message);
-            // Reload discussions – skip cache to ensure the new discussion appears
             const discussions = await this.forumService.getDiscussions(this.forum()!.id, 0, 25, true);
             this.discussions.set(discussions);
             this.showNewDiscussion.set(false);
         } catch (err) {
             console.error('Create discussion failed:', err);
+            this.forumError.set('Thema konnte nicht erstellt werden.');
+        }
+    }
+
+    // --- Editing ---
+
+    startEditPost(post: ForumPost): void {
+        this.editingPostId.set(post.id);
+        this.editSubject.set(post.subject);
+        this.editMessage.set(post.message.replace(/<[^>]*>/g, '')); // Strip HTML for plain textarea
+        this.replyingTo.set(null);
+    }
+
+    cancelEdit(): void {
+        this.editingPostId.set(null);
+        this.editSubject.set('');
+        this.editMessage.set('');
+    }
+
+    async saveEdit(postId: number): Promise<void> {
+        const subject = this.editSubject().trim();
+        const message = this.editMessage().trim();
+        if (!subject || !message) return;
+
+        this.editBusy.set(true);
+        try {
+            await this.forumService.updatePost(postId, subject, message);
+            await this.reloadPosts();
+            this.editingPostId.set(null);
+            this.editSubject.set('');
+            this.editMessage.set('');
+        } catch (err) {
+            console.error('Edit post failed:', err);
+            this.forumError.set('Beitrag konnte nicht bearbeitet werden.');
+        } finally {
+            this.editBusy.set(false);
+        }
+    }
+
+    // --- Deleting ---
+
+    async deletePost(postId: number): Promise<void> {
+        this.deleteBusy.set(postId);
+        try {
+            await this.forumService.deletePost(postId);
+            await this.reloadPosts();
+        } catch (err) {
+            console.error('Delete post failed:', err);
+            this.forumError.set('Beitrag konnte nicht gelöscht werden.');
+        } finally {
+            this.deleteBusy.set(null);
         }
     }
 
