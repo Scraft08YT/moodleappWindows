@@ -58,6 +58,7 @@ export class OfflineCacheService {
         'mod_forum_get_forums_by_courses': 5 * 60 * 1000,    // 5 min
         'mod_forum_get_forum_discussions': 2 * 60 * 1000,    // 2 min – discussions change frequently
         'mod_forum_get_discussion_posts': 60 * 1000,         // 1 min – posts change frequently
+        'mod_forum_get_forum_discussion_posts': 60 * 1000,   // 1 min – legacy posts endpoint
     };
 
     constructor(private readonly storage: StorageService) {

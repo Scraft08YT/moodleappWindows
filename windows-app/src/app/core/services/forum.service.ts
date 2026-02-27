@@ -60,63 +60,118 @@ export type Forum = {
 };
 
 // ---------------------------------------------------------------------------
-// Raw Moodle API response types for mod_forum_get_discussion_posts (3.8+)
+// Raw Moodle API response types — new WS (Moodle 3.8+)
 // ---------------------------------------------------------------------------
 
 type RawPostAuthor = {
-    id: number;
-    fullname: string;
+    id?: number;
+    fullname?: string;
+    isdeleted?: boolean;
     urls?: { profileimage?: string; profile?: string };
+    groups?: { id: number; name: string; urls: { image?: string } }[];
 };
 
 type RawPostCapabilities = {
     view?: boolean;
     edit?: boolean;
     delete?: boolean;
+    split?: boolean;
     reply?: boolean;
+    selfenrol?: boolean;
+    export?: boolean;
+    controlreadstatus?: boolean;
+    canreplyprivately?: boolean;
 };
 
-type RawAttachment = {
+type RawNewAttachment = {
     filename: string;
     filepath?: string;
     filesize?: number;
     mimetype?: string;
-    url?: string;
+    timemodified?: number;
     fileurl?: string;
+    url?: string;
+    isexternalfile?: boolean;
 };
 
-type RawPost = {
+/** Post shape returned by `mod_forum_get_discussion_posts` (Moodle 3.8+). */
+type RawNewPost = {
     id: number;
     discussionid: number;
     parentid?: number | null;
-    parent?: number;
+    hasparent: boolean;
     subject: string;
+    replysubject?: string;
     message: string;
+    messageformat?: number;
     timecreated: number;
-    timemodified: number;
-    author?: RawPostAuthor;
-    userfullname?: string;
-    userpictureurl?: string;
-    userid?: number;
-    attachment?: boolean | string;
-    attachments?: RawAttachment[];
-    capabilities?: RawPostCapabilities;
-    children?: RawPost[];
+    timemodified?: number;
+    unread?: boolean;
+    isdeleted?: boolean;
+    isprivatereply?: boolean;
+    author: RawPostAuthor;
+    capabilities: RawPostCapabilities;
+    attachments?: RawNewAttachment[];
+    messageinlinefiles?: RawNewAttachment[];
+    tags?: unknown[];
+    haswordcount?: boolean;
+    wordcount?: number;
+    charcount?: number;
+    urls?: Record<string, string>;
 };
 
-type RawDiscussionPostsResponse = {
-    posts: RawPost[];
+type RawNewPostsResponse = {
+    posts: RawNewPost[];
+    forumid?: number;
+    courseid?: number;
+    warnings?: unknown[];
+};
+
+// ---------------------------------------------------------------------------
+// Raw Moodle API response types — legacy WS
+// ---------------------------------------------------------------------------
+
+/** Post shape returned by `mod_forum_get_forum_discussion_posts` (legacy). */
+type RawLegacyPost = {
+    id: number;
+    discussion: number;
+    parent: number;
+    userid: number;
+    created: number;
+    modified: number;
+    subject: string;
+    message: string;
+    messageformat?: number;
+    attachment: string | boolean;
+    attachments?: RawNewAttachment[];
+    canreply: boolean;
+    postread?: boolean;
+    userfullname: string;
+    userpictureurl?: string;
+    deleted?: boolean;
+    isprivatereply?: boolean;
+    children?: number[];
+    tags?: unknown[];
+};
+
+type RawLegacyPostsResponse = {
+    posts: RawLegacyPost[];
+    warnings?: unknown[];
 };
 
 /**
  * Service for Moodle forum interactions.
+ *
+ * Supports both the new `mod_forum_get_discussion_posts` (Moodle 3.8+) and the
+ * legacy `mod_forum_get_forum_discussion_posts` WS function, falling back
+ * automatically when the newer endpoint is not available.
  */
 @Injectable({ providedIn: 'root' })
 export class ForumService {
 
     constructor(private readonly api: MoodleApiService) {}
 
-    /** Fetches forum info by course module instance ID. */
+    /** Fetches all forums in a course. */
     async getForum(courseId: number): Promise<Forum[]> {
         return this.api.call<Forum[]>(
             'mod_forum_get_forums_by_courses',
@@ -130,7 +185,7 @@ export class ForumService {
      * @param forumId   The forum instance ID.
      * @param page      Page index (0-based).
      * @param perPage   Items per page.
-     * @param skipCache When true, bypasses the response cache and fetches fresh data from the network.
+     * @param skipCache When true, bypasses the response cache.
      */
     async getDiscussions(
         forumId: number,
@@ -149,21 +204,22 @@ export class ForumService {
     /**
      * Fetches posts of a discussion.
      *
-     * Maps the raw Moodle 3.8+ response format (nested `author` object,
-     * nullable `parentid`, `capabilities`) to the flat `ForumPost` type
-     * used by the UI.
+     * Tries the new `mod_forum_get_discussion_posts` first (Moodle 3.8+).
+     * Falls back to `mod_forum_get_forum_discussion_posts` (legacy) if
+     * the new endpoint is unavailable or returns an error.
+     *
+     * Both response formats are normalised to the flat `ForumPost` type.
      *
      * @param discussionId The discussion ID.
      * @param skipCache    When true, bypasses the response cache.
      */
     async getDiscussionPosts(discussionId: number, skipCache = false): Promise<ForumPost[]> {
-        const res = await this.api.call<RawDiscussionPostsResponse>(
-            'mod_forum_get_discussion_posts',
-            { discussionid: discussionId, sortby: 'created', sortdirection: 'ASC' },
-            { skipCache },
-        );
-        const normalised = (res.posts ?? []).map((raw) => this.mapRawPost(raw));
-        return this.buildPostTree(normalised);
+        try {
+            return await this.getDiscussionPostsNew(discussionId, skipCache);
+        } catch {
+            // New WS not available — fall back to legacy
+            return this.getDiscussionPostsLegacy(discussionId, skipCache);
+        }
     }
 
     /** Adds a reply to a discussion. */
@@ -183,47 +239,45 @@ export class ForumService {
     }
 
     /** Updates an existing post's subject and message. */
-    async updatePost(postId: number, subject: string, message: string): Promise<unknown> {
-        return this.api.call(
+    async updatePost(postId: number, subject: string, message: string): Promise<boolean> {
+        const res = await this.api.call<{ status: boolean; warnings?: unknown[] }>(
             'mod_forum_update_discussion_post',
             { postid: postId, subject, message },
         );
+        return res.status;
     }
 
     /** Deletes a post. */
-    async deletePost(postId: number): Promise<unknown> {
-        return this.api.call(
+    async deletePost(postId: number): Promise<boolean> {
+        const res = await this.api.call<{ status: boolean; warnings?: unknown[] }>(
             'mod_forum_delete_post',
             { postid: postId },
         );
+        return res.status;
     }
 
     // ---------------------------------------------------------------------------
-    // Private helpers
+    // Private — new WS (Moodle 3.8+)
     // ---------------------------------------------------------------------------
 
-    /**
-     * Maps a raw Moodle post (3.8+ format or legacy) to the normalised `ForumPost` shape.
-     *
-     * The newer API nests user info inside `author` and provides `capabilities`.
-     * The legacy API uses flat `userfullname` / `userpictureurl` fields.
-     */
-    private mapRawPost(raw: RawPost): ForumPost {
-        const parentId = raw.parentid ?? raw.parent ?? 0;
+    private async getDiscussionPostsNew(discussionId: number, skipCache: boolean): Promise<ForumPost[]> {
+        const res = await this.api.call<RawNewPostsResponse>(
+            'mod_forum_get_discussion_posts',
+            { discussionid: discussionId, sortby: 'created', sortdirection: 'ASC' },
+            { skipCache },
+        );
+        const posts = (res.posts ?? []).map((raw) => this.mapNewPost(raw));
+        return this.buildPostTree(posts);
+    }
 
-        // Author fields – prefer nested `author` object, fall back to flat fields
-        const fullname = raw.author?.fullname ?? raw.userfullname ?? '';
-        const pictureUrl = raw.author?.urls?.profileimage ?? raw.userpictureurl ?? '';
-        const userId = raw.author?.id ?? raw.userid ?? 0;
+    /** Maps the new-format post to the normalised `ForumPost` shape. */
+    private mapNewPost(raw: RawNewPost): ForumPost {
+        const parentId = raw.parentid ?? 0;
+        const fullname = raw.author?.fullname ?? '';
+        const pictureUrl = raw.author?.urls?.profileimage ?? '';
+        const userId = raw.author?.id ?? 0;
 
-        // Attachments – normalise `url` vs `fileurl`
-        const attachments: ForumAttachment[] = (raw.attachments ?? []).map((a) => ({
-            filename: a.filename,
-            filepath: a.filepath ?? '/',
-            fileurl: a.url ?? a.fileurl ?? '',
-            filesize: a.filesize ?? 0,
-            mimetype: a.mimetype ?? '',
-        }));
+        const attachments = this.normaliseAttachments(raw.attachments);
 
         return {
             id: raw.id,
@@ -232,17 +286,70 @@ export class ForumService {
             subject: raw.subject ?? '',
             message: raw.message ?? '',
             timecreated: raw.timecreated,
-            timemodified: raw.timemodified,
+            timemodified: raw.timemodified ?? raw.timecreated,
             userfullname: fullname,
             userpictureurl: pictureUrl,
             userid: userId,
-            attachment: attachments.length > 0 || !!raw.attachment,
+            attachment: attachments.length > 0,
             attachments,
             children: [],
             canEdit: raw.capabilities?.edit ?? false,
             canDelete: raw.capabilities?.delete ?? false,
             canReply: raw.capabilities?.reply ?? true,
         };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Private — legacy WS
+    // ---------------------------------------------------------------------------
+
+    private async getDiscussionPostsLegacy(discussionId: number, skipCache: boolean): Promise<ForumPost[]> {
+        const res = await this.api.call<RawLegacyPostsResponse>(
+            'mod_forum_get_forum_discussion_posts',
+            { discussionid: discussionId, sortby: 'created', sortdirection: 'ASC' },
+            { skipCache },
+        );
+        const posts = (res.posts ?? []).map((raw) => this.mapLegacyPost(raw));
+        return this.buildPostTree(posts);
+    }
+
+    /** Maps the legacy-format post to the normalised `ForumPost` shape. */
+    private mapLegacyPost(raw: RawLegacyPost): ForumPost {
+        const attachments = this.normaliseAttachments(raw.attachments);
+
+        return {
+            id: raw.id,
+            discussionid: raw.discussion,
+            parentid: raw.parent ?? 0,
+            subject: raw.subject ?? '',
+            message: raw.message ?? '',
+            timecreated: raw.created,
+            timemodified: raw.modified ?? raw.created,
+            userfullname: raw.userfullname ?? '',
+            userpictureurl: raw.userpictureurl ?? '',
+            userid: raw.userid ?? 0,
+            attachment: attachments.length > 0 || !!raw.attachment,
+            attachments,
+            children: [],
+            canEdit: false,   // Legacy WS does not expose edit capability
+            canDelete: false,  // Legacy WS does not expose delete capability
+            canReply: !!raw.canreply,
+        };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Shared helpers
+    // ---------------------------------------------------------------------------
+
+    /** Normalises attachments from either API format. */
+    private normaliseAttachments(raw?: RawNewAttachment[]): ForumAttachment[] {
+        return (raw ?? []).map((a) => ({
+            filename: a.filename,
+            filepath: a.filepath ?? '/',
+            fileurl: a.fileurl ?? a.url ?? '',
+            filesize: a.filesize ?? 0,
+            mimetype: a.mimetype ?? '',
+        }));
     }
 
     /** Builds a tree of posts from a flat array using parentid. */
