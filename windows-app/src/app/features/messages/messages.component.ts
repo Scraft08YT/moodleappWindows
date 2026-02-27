@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { MessageService, type UserSearchResult } from '../../core/services/message.service';
 import type { Conversation, Message } from '../../core/models/message.model';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 /**
  * Messages page – split-view with conversation list and message detail.
@@ -11,7 +12,7 @@ import type { Conversation, Message } from '../../core/models/message.model';
 @Component({
     selector: 'app-messages',
     standalone: true,
-    imports: [FormsModule],
+    imports: [FormsModule, SafeHtmlPipe],
     templateUrl: './messages.component.html',
     styleUrl: './messages.component.scss',
 })

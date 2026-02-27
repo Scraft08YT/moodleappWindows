@@ -26,7 +26,7 @@
     @if (modname() === 'forum') {
     <div class="forum-view">
         @if (forum()?.intro) {
-        <div class="card forum-intro" [innerHTML]="forum()!.intro"></div>
+        <div class="card forum-intro" [innerHTML]="forum()!.intro | safeHtml"></div>
         }
 
         @if (forumError()) {
@@ -121,7 +121,7 @@
                 }
             </div>
             @if (a.intro) {
-            <div class="assign-hero__intro" [innerHTML]="a.intro"></div>
+            <div class="assign-hero__intro" [innerHTML]="a.intro | safeHtml"></div>
             }
         </div>
 
@@ -248,7 +248,7 @@
             <div class="assign-grade__feedback">
                 @for (plugin of submissionStatus()!.feedback!.plugins!; track plugin.type) {
                 @if (plugin.editorfields?.[0]?.text; as feedbackText) {
-                <div class="assign-grade__comment" [innerHTML]="feedbackText"></div>
+                <div class="assign-grade__comment" [innerHTML]="feedbackText | safeHtml"></div>
                 }
                 }
             </div>
@@ -374,7 +374,7 @@
                         <span class="assign-comments__author">{{ comment.fullname }}</span>
                         <span class="assign-comments__time text-muted">{{ comment.time }}</span>
                     </div>
-                    <div class="assign-comments__content" [innerHTML]="comment.content"></div>
+                    <div class="assign-comments__content" [innerHTML]="comment.content | safeHtml"></div>
                 </div>
                 } @empty {
                 <p class="text-muted">Keine Kommentare vorhanden.</p>
@@ -411,7 +411,7 @@
         @if (quizView() === 'info') {
         <!-- Quiz intro -->
         @if (q.intro) {
-        <div class="card quiz-intro" [innerHTML]="q.intro"></div>
+        <div class="card quiz-intro" [innerHTML]="q.intro | safeHtml"></div>
         }
 
         <!-- Quiz details card -->
@@ -627,7 +627,7 @@
             @for (data of review.additionaldata; track data.id) {
             <div class="quiz-review-grade__info">
                 <strong>{{ data.title }}:</strong>
-                <span [innerHTML]="data.content"></span>
+                <span [innerHTML]="data.content | safeHtml"></span>
             </div>
             }
         </div>
@@ -644,7 +644,7 @@
                 <span class="quiz-review-question__number">Frage {{ q.number }}</span>
                 <span class="quiz-review-question__status">{{ q.status }}</span>
             </div>
-            <div class="quiz-review-question__body" [innerHTML]="$any(q).safeHtml ?? q.html"></div>
+            <div class="quiz-review-question__body" [innerHTML]="q.html | safeHtml"></div>
         </div>
         }
         }
@@ -659,7 +659,7 @@
     @if (modname() === 'page' || modname() === 'book') {
     <div class="page-view card">
         @if (pageContent()) {
-        <div class="page-content" [innerHTML]="pageContent()"></div>
+        <div class="page-content" [innerHTML]="pageContent() | safeHtml"></div>
         } @else {
         <p class="text-muted">Kein Inhalt verfügbar.</p>
         }
@@ -670,7 +670,7 @@
     @if (modname() === 'url') {
     <div class="url-view card">
         @if (currentModule()?.description) {
-        <div class="url-description" [innerHTML]="currentModule()!.description"></div>
+        <div class="url-description" [innerHTML]="currentModule()!.description | safeHtml"></div>
         }
         <div class="url-action">
             <p class="text-muted">Externer Link</p>
@@ -689,7 +689,7 @@
     @if (modname() === 'resource') {
     <div class="resource-view card">
         @if (currentModule()?.description) {
-        <div class="resource-description" [innerHTML]="currentModule()!.description"></div>
+        <div class="resource-description" [innerHTML]="currentModule()!.description | safeHtml"></div>
         }
         @if (currentModule()?.contents?.length) {
         <div class="resource-file">
@@ -710,7 +710,7 @@
     @if (modname() === 'folder') {
     <div class="folder-view card">
         @if (currentModule()?.description) {
-        <div class="folder-description" [innerHTML]="currentModule()!.description"></div>
+        <div class="folder-description" [innerHTML]="currentModule()!.description | safeHtml"></div>
         }
         <div class="folder-files">
             @for (file of folderFiles(); track file.filename) {
@@ -739,7 +739,7 @@
     @if (modname() === 'label' || !['forum','assign','quiz','page','book','url','resource','folder'].includes(modname())) {
     <div class="generic-view card">
         @if (currentModule()?.description) {
-        <div class="generic-content" [innerHTML]="currentModule()!.description"></div>
+        <div class="generic-content" [innerHTML]="currentModule()!.description | safeHtml"></div>
         } @else {
         <p class="text-muted">Diese Aktivität kann in der Desktop-App nicht angezeigt werden.</p>
         <a [href]="currentModule()?.url" target="_blank" class="btn-primary" style="display: inline-flex; gap: 6px; margin-top: 12px;">
@@ -784,7 +784,7 @@
         <!-- Normal view -->
         @if (editingPostId() !== post.id) {
         <div class="post__subject">{{ post.subject }}</div>
-        <div class="post__body" [innerHTML]="post.message"></div>
+        <div class="post__body" [innerHTML]="post.message | safeHtml"></div>
 
         @if (post.attachments?.length) {
         <div class="post__attachments">

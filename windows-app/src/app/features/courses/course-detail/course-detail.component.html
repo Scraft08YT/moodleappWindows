@@ -60,7 +60,7 @@
             @if (isSectionExpanded(section.id)) {
             <div class="section__content">
                 @if (section.summary) {
-                <div class="section__summary" [innerHTML]="section.summary"></div>
+                <div class="section__summary" [innerHTML]="section.summary | safeHtml"></div>
                 }
 
                 <div class="module-list">
@@ -77,7 +77,7 @@
                                 <span class="module__type">{{ getModuleLabel(module.modname) }}</span>
                                 @if (module.description) {
                                 <span class="module__dot">·</span>
-                                <span class="module__description" [innerHTML]="module.description"></span>
+                                <span class="module__description" [innerHTML]="module.description | safeHtml"></span>
                                 }
                             </div>
                         </div>

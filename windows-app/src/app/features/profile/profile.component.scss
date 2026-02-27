@@ -129,6 +129,11 @@
     font-size: 14px;
     line-height: 1.6;
     color: var(--fg-2);
+
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    iframe { max-width: 100%; border: none; }
+    video { max-width: 100%; height: auto; }
+    a { color: var(--accent); }
 }
 
 .profile-courses__list {

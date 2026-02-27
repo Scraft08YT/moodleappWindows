@@ -5,6 +5,7 @@ import { DatePipe } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { UserProfileService } from '../../core/services/user-profile.service';
 import type { UserProfile } from '../../core/models/profile.model';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 /**
  * User profile page — shows avatar, details, enrolled courses, and custom fields.
@@ -12,7 +13,7 @@ import type { UserProfile } from '../../core/models/profile.model';
 @Component({
     selector: 'app-profile',
     standalone: true,
-    imports: [RouterLink, DatePipe],
+    imports: [RouterLink, DatePipe, SafeHtmlPipe],
     templateUrl: './profile.component.html',
     styleUrl: './profile.component.scss',
 })

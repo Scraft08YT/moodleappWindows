@@ -100,7 +100,7 @@
             @for (field of profile()!.customfields; track field.shortname) {
             <div class="profile-details__item">
                 <span class="profile-details__label">{{ field.name }}</span>
-                <span class="profile-details__value" [innerHTML]="field.value"></span>
+                <span class="profile-details__value" [innerHTML]="field.value | safeHtml"></span>
             </div>
             }
         </div>
@@ -111,7 +111,7 @@
     @if (profile()!.description) {
     <div class="profile-description card">
         <h2>Beschreibung</h2>
-        <div class="profile-description__content" [innerHTML]="profile()!.description"></div>
+        <div class="profile-description__content" [innerHTML]="profile()!.description | safeHtml"></div>
     </div>
     }
 

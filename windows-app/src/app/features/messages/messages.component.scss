@@ -282,6 +282,11 @@
         font-size: $font-size-base;
         line-height: 1.5;
         word-wrap: break-word;
+
+        img { max-width: 100%; height: auto; border-radius: $radius-sm; }
+        iframe { max-width: 100%; border: none; }
+        video { max-width: 100%; height: auto; }
+        a { color: inherit; text-decoration: underline; }
     }
 
     &__time {

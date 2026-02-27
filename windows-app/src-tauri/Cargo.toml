@@ -1,6 +1,6 @@
 [package]
 name = "moodle-desktop"
-version = "1.5.2"
+version = "1.5.3"
 description = "Moodle Desktop App for Windows"
 authors = ["Moodle Desktop Team"]
 edition = "2021"

@@ -6,6 +6,7 @@ import { FileDownloadService } from '../../../core/services/file-download.servic
 import { DownloadedFilesService } from '../../../core/services/downloaded-files.service';
 import { MoodleApiService } from '../../../core/services/moodle-api.service';
 import type { CourseSection, CourseModule } from '../../../core/models/course.model';
+import { SafeHtmlPipe } from '../../../shared/pipes/safe-html.pipe';
 
 /**
  * Course detail page – shows sections and modules of a single course.
@@ -13,7 +14,7 @@ import type { CourseSection, CourseModule } from '../../../core/models/course.mo
 @Component({
     selector: 'app-course-detail',
     standalone: true,
-    imports: [RouterLink],
+    imports: [RouterLink, SafeHtmlPipe],
     templateUrl: './course-detail.component.html',
     styleUrl: './course-detail.component.scss',
 })

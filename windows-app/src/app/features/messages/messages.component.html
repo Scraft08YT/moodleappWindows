@@ -193,7 +193,7 @@
             } @else {
             @for (msg of messages(); track msg.id) {
             <div class="message-bubble" [class.message-bubble--own]="msg.userId === currentUserId()">
-                <div class="message-bubble__text" [innerHTML]="msg.text"></div>
+                <div class="message-bubble__text" [innerHTML]="msg.text | safeHtml"></div>
                 <span class="message-bubble__time text-muted">
                     {{ formatTime(msg.timeCreated) }}
                 </span>

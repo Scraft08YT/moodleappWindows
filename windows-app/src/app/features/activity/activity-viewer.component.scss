@@ -50,6 +50,10 @@
     font-size: 14px;
     line-height: 1.6;
     color: var(--fg-2);
+
+    ::ng-deep img { max-width: 100%; height: auto; border-radius: 4px; }
+    ::ng-deep iframe { max-width: 100%; border: none; border-radius: 4px; }
+    ::ng-deep video { max-width: 100%; height: auto; }
 }
 
 .forum-error {
@@ -186,7 +190,9 @@
         line-height: 1.6;
         color: var(--fg-2);
 
-        img { max-width: 100%; border-radius: 4px; }
+        img { max-width: 100%; height: auto; border-radius: 4px; }
+        iframe { max-width: 100%; border: none; border-radius: 4px; }
+        video { max-width: 100%; height: auto; }
         a { color: var(--accent); }
     }
 
@@ -298,7 +304,9 @@
         font-size: 14px;
         line-height: 1.6;
         color: var(--fg-2);
-        img { max-width: 100%; }
+        img { max-width: 100%; height: auto; border-radius: 4px; }
+        iframe { max-width: 100%; border: none; border-radius: 4px; }
+        video { max-width: 100%; height: auto; }
     }
 }
 
@@ -747,7 +755,10 @@
     line-height: 1.7;
     color: var(--fg-2);
 
-    img { max-width: 100%; border-radius: 4px; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    iframe { max-width: 100%; border: none; border-radius: 4px; }
+    video { max-width: 100%; height: auto; }
+    audio { max-width: 100%; }
     a { color: var(--accent); }
     h1, h2, h3, h4 { color: var(--fg-1); margin: 16px 0 8px; }
     table { border-collapse: collapse; width: 100%; margin: 12px 0; }
@@ -764,6 +775,9 @@
     line-height: 1.6;
     color: var(--fg-2);
     margin-bottom: 16px;
+
+    img { max-width: 100%; height: auto; }
+    iframe { max-width: 100%; border: none; }
 }
 
 .url-action {
@@ -782,6 +796,9 @@
     line-height: 1.6;
     color: var(--fg-2);
     margin-bottom: 16px;
+
+    img { max-width: 100%; height: auto; }
+    iframe { max-width: 100%; border: none; }
 }
 
 .resource-file {
@@ -806,6 +823,9 @@
     line-height: 1.6;
     color: var(--fg-2);
     margin-bottom: 16px;
+
+    img { max-width: 100%; height: auto; }
+    iframe { max-width: 100%; border: none; }
 }
 
 .folder-files {
@@ -1895,7 +1915,9 @@
     line-height: 1.6;
     color: var(--fg-2);
 
-    img { max-width: 100%; }
+    img { max-width: 100%; height: auto; }
+    iframe { max-width: 100%; border: none; border-radius: 4px; }
+    video { max-width: 100%; height: auto; }
     a { color: var(--accent); }
 }
 

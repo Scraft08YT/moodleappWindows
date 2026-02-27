@@ -12,6 +12,7 @@ import { QuizQuestionEngine } from '../../core/services/quiz-question-engine';
 import { FileUploadService } from '../../core/services/file-upload.service';
 import { MoodleApiService } from '../../core/services/moodle-api.service';
 import { FileDownloadService } from '../../core/services/file-download.service';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import type { CourseModule } from '../../core/models/course.model';
 
 /** Comment returned by `core_comment_get_comments`. */
@@ -34,7 +35,7 @@ export type SubmissionComment = {
 @Component({
     selector: 'app-activity-viewer',
     standalone: true,
-    imports: [RouterLink, DatePipe, DecimalPipe, NgTemplateOutlet, FormsModule],
+    imports: [RouterLink, DatePipe, DecimalPipe, NgTemplateOutlet, FormsModule, SafeHtmlPipe],
     templateUrl: './activity-viewer.component.html',
     styleUrl: './activity-viewer.component.scss',
 })
@@ -212,10 +213,6 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             }
 
             if (foundModule) {
-                // Rewrite pluginfile URLs in module description for embedded media
-                if (foundModule.description) {
-                    foundModule.description = this.api.rewritePluginfileUrls(foundModule.description);
-                }
                 this.currentModule.set(foundModule);
                 this.moduleName.set(foundModule.name);
                 this.instanceId.set(foundModule.instance);
@@ -415,8 +412,6 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
     private async loadAssignment(): Promise<void> {
         const assign = await this.assignService.getAssignmentByCmid(this.moduleId(), this.courseId());
         if (assign) {
-            // Rewrite pluginfile URLs in assignment description
-            assign.intro = this.api.rewritePluginfileUrls(assign.intro ?? '');
             this.assignment.set(assign);
             await this.reloadSubmissionStatus(assign.id);
         }
@@ -604,11 +599,11 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             );
             const page = pages.pages?.find((p) => p.coursemodule === this.moduleId());
             if (page) {
-                this.pageContent.set(this.api.rewritePluginfileUrls(page.content ?? ''));
+                this.pageContent.set(page.content ?? '');
             }
         } catch {
             // Fallback: show description
-            this.pageContent.set(this.api.rewritePluginfileUrls(mod.description ?? ''));
+            this.pageContent.set(mod.description ?? '');
         }
     }
 
@@ -760,10 +755,6 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
                 return;
             }
 
-            // Rewrite pluginfile URLs in quiz intro
-            if (quiz.intro) {
-                quiz.intro = this.api.rewritePluginfileUrls(quiz.intro);
-            }
             this.quiz.set(quiz);
 
             // Load access info, attempts, and best grade independently
@@ -934,12 +925,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
             // Load review
             const review = await this.quizService.getAttemptReview(attempt.id);
-            // Mark unsupported types, rewrite URLs, bypass sanitiser
             this.annotateUnsupportedQuestions(review.questions);
-            for (const q of review.questions) {
-                q.html = this.api.rewritePluginfileUrls(q.html);
-                (q as any).safeHtml = this.sanitizer.bypassSecurityTrustHtml(q.html);
-            }
             this.attemptReview.set(review);
             this.quizView.set('review');
 
@@ -970,12 +956,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
         this.quizError.set('');
         try {
             const review = await this.quizService.getAttemptReview(attemptId);
-            // Mark unsupported types, rewrite URLs, bypass sanitiser
             this.annotateUnsupportedQuestions(review.questions);
-            for (const q of review.questions) {
-                q.html = this.api.rewritePluginfileUrls(q.html);
-                (q as any).safeHtml = this.sanitizer.bypassSecurityTrustHtml(q.html);
-            }
             this.attemptReview.set(review);
             this.quizView.set('review');
 

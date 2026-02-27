@@ -144,6 +144,56 @@ img {
     height: auto;
 }
 
+// Embedded media — responsive iframes (YouTube, etc.), video, audio
+iframe {
+    max-width: 100%;
+    border: none;
+    border-radius: 4px;
+}
+
+video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+audio {
+    max-width: 100%;
+}
+
+// Moodle media-embed wrapper (used for atto/tiny embedded video/audio)
+.mediaplugin,
+.mediaplugin_videojs,
+.mediaplugin_html5video,
+.mediaplugin_html5audio {
+    max-width: 100%;
+    margin: 8px 0;
+
+    video, audio, iframe {
+        max-width: 100%;
+    }
+}
+
+// Responsive YouTube / Vimeo embed container
+.video-container,
+.oembed-responsive,
+.mediaplugin_youtube {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; // 16:9
+    margin: 8px 0;
+    overflow: hidden;
+    border-radius: 4px;
+
+    iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
 // Disable drag on all images and links (Tauri)
 img, a {
     -webkit-user-drag: none;

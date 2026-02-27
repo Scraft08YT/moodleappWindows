@@ -141,7 +141,9 @@
         border-bottom: 1px solid var(--stroke-2);
 
         a { color: $color-brand-primary; }
-        img { max-width: 100%; border-radius: $radius-sm; }
+        img { max-width: 100%; height: auto; border-radius: $radius-sm; }
+        iframe { max-width: 100%; border: none; border-radius: $radius-sm; }
+        video { max-width: 100%; height: auto; }
     }
 
     &__empty {
