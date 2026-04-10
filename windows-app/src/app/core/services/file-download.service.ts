@@ -31,7 +31,7 @@ export class FileDownloadService {
 
         this.activeDownloads.update((list) => [
             ...list,
-            { id: downloadId, filename, progress: 0, status: 'downloading' },
+            { id: downloadId, fileUrl, filename, progress: 0, status: 'downloading' },
         ]);
 
         try {
@@ -59,14 +59,14 @@ export class FileDownloadService {
     ): Promise<boolean> {
         try {
             const { download } = await import('@tauri-apps/plugin-upload' as string);
-            const { downloadDir } = await import('@tauri-apps/api/path' as string);
+            const { downloadDir, join } = await import('@tauri-apps/api/path' as string);
 
             const downloadPath = await downloadDir();
-            const filePath = `${downloadPath}/${filename}`;
+            const filePath = await join(downloadPath, filename);
 
-            await download(url, filePath, (progress: { progressTotal: number; total: number }) => {
-                const pct = progress.total > 0
-                    ? Math.round((progress.progressTotal / progress.total) * 100)
+            await download(url, filePath, (progress: number, total: number) => {
+                const pct = total > 0
+                    ? Math.round((progress / total) * 100)
                     : 0;
                 this.activeDownloads.update((list) =>
                     list.map((d) =>
@@ -80,6 +80,8 @@ export class FileDownloadService {
                     d.id === downloadId ? { ...d, progress: 100, status: 'complete' as const } : d,
                 ),
             );
+
+            this.scheduleRemove(downloadId);
 
             // Record the download for later re-opening
             void this.downloadedFiles.recordDownload({
@@ -115,11 +117,21 @@ export class FileDownloadService {
                 d.id === downloadId ? { ...d, progress: 100, status: 'complete' as const } : d,
             ),
         );
+
+        this.scheduleRemove(downloadId);
+    }
+
+    /** Removes a completed/errored download from the active list after a delay. */
+    private scheduleRemove(downloadId: string): void {
+        setTimeout(() => {
+            this.activeDownloads.update((list) => list.filter((d) => d.id !== downloadId));
+        }, 3_000);
     }
 }
 
 export type DownloadProgress = {
     id: string;
+    fileUrl: string;
     filename: string;
     progress: number;
     status: 'downloading' | 'complete' | 'error';

@@ -85,7 +85,26 @@
                             @if (module.contents.length > 0) {
                             <div class="module__actions" (click)="$event.stopPropagation()">
                                 @for (content of module.contents; track content.filename) {
-                                @if (isFileDownloaded(content.fileurl)) {
+                                @let dlProgress = getDownloadProgress(content.fileurl);
+                                @if (dlProgress) {
+                                <!-- Downloading: show progress -->
+                                <div class="module__progress" [title]="content.filename + ' — ' + dlProgress.progress + '%'">
+                                    <svg class="module__progress-ring" viewBox="0 0 24 24" width="24" height="24">
+                                        <circle cx="12" cy="12" r="10" fill="none" stroke="var(--border-subtle)" stroke-width="2.5" />
+                                        <circle cx="12" cy="12" r="10" fill="none" stroke="var(--color-brand-primary, #0078d4)"
+                                            stroke-width="2.5" stroke-dasharray="62.83"
+                                            [attr.stroke-dashoffset]="62.83 - (62.83 * dlProgress.progress / 100)" stroke-linecap="round"
+                                            transform="rotate(-90 12 12)" />
+                                    </svg>
+                                    @if (dlProgress.status === 'complete') {
+                                    <svg class="module__check" viewBox="0 0 16 16" width="10" height="10"
+                                        fill="var(--color-brand-primary, #0078d4)">
+                                        <path
+                                            d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
+                                    </svg>
+                                    }
+                                </div>
+                                } @else if (isFileDownloaded(content.fileurl)) {
                                 <button class="module__open" (click)="openDownloadedFile(content.fileurl)"
                                     [title]="'Öffnen: ' + content.filename">
                                     <span class="module__file-ext">{{ getFileExtension(content.filename) }}</span>
@@ -94,7 +113,7 @@
                                             d="M6 3a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V8.83a2 2 0 00-.59-1.42l-3.82-3.82A2 2 0 0010.17 3H6zm4 1.1L13.9 8H11a1 1 0 01-1-1V4.1z" />
                                     </svg>
                                 </button>
-                                }
+                                } @else {
                                 <button class="module__download" (click)="downloadFile(content.fileurl, content.filename)"
                                     [title]="'Download: ' + content.filename">
                                     <span class="module__file-ext">{{ getFileExtension(content.filename) }}</span>
@@ -103,6 +122,7 @@
                                             d="M10 2a.5.5 0 01.5.5v8.8l2.65-2.65a.5.5 0 01.7.7l-3.5 3.5a.5.5 0 01-.7 0l-3.5-3.5a.5.5 0 01.7-.7l2.65 2.64V2.5A.5.5 0 0110 2zM3.5 14a.5.5 0 00-.5.5v1A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5v-1a.5.5 0 00-1 0v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 00-.5-.5z" />
                                     </svg>
                                 </button>
+                                }
                                 }
                             </div>
                             }

@@ -17,6 +17,7 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::default().build())
+        .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_app_version,

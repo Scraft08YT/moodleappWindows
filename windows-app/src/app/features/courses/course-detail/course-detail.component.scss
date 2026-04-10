@@ -326,6 +326,24 @@
         }
     }
 
+    &__progress {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+    }
+
+    &__progress-ring {
+        transition: transform $duration-fast;
+    }
+
+    &__check {
+        position: absolute;
+        animation: pop-in 0.25s $easing-decelerate;
+    }
+
     &__file-ext {
         font-size: 10px;
         font-weight: $font-weight-bold;
@@ -342,4 +360,9 @@
     &:hover &__chevron {
         opacity: 1;
     }
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }

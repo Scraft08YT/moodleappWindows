@@ -2,7 +2,7 @@ import { Component, inject, signal, type OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CourseService } from '../../../core/services/course.service';
-import { FileDownloadService } from '../../../core/services/file-download.service';
+import { FileDownloadService, type DownloadProgress } from '../../../core/services/file-download.service';
 import { DownloadedFilesService } from '../../../core/services/downloaded-files.service';
 import { MoodleApiService } from '../../../core/services/moodle-api.service';
 import type { CourseSection, CourseModule } from '../../../core/models/course.model';
@@ -33,6 +33,8 @@ export class CourseDetailComponent implements OnInit {
     readonly expandedSections = signal<Set<number>>(new Set());
     /** Set of fileUrls that have been downloaded (for showing "Open" button). */
     readonly downloadedFileUrls = signal<Set<string>>(new Set());
+    /** Expose active downloads for progress UI. */
+    readonly activeDownloads = this.fileDownload.activeDownloads;
 
     async ngOnInit(): Promise<void> {
         const courseId = Number(this.route.snapshot.paramMap.get('id'));
@@ -116,6 +118,11 @@ export class CourseDetailComponent implements OnInit {
     /** Opens a previously downloaded file using the system default app. */
     async openDownloadedFile(fileUrl: string): Promise<void> {
         await this.downloadedFiles.openFile(fileUrl);
+    }
+
+    /** Gets the download progress for a file URL, or null if not downloading. */
+    getDownloadProgress(fileUrl: string): DownloadProgress | null {
+        return this.activeDownloads().find((d) => d.fileUrl === fileUrl) ?? null;
     }
 
     /** Whether a file has been downloaded before. */
