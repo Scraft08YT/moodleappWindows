@@ -2203,7 +2203,7 @@ dependencies = [
 
 [[package]]
 name = "moodle-desktop"
-version = "1.5.3"
+version = "1.5.4"
 dependencies = [
  "serde",
  "serde_json",

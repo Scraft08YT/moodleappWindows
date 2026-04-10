@@ -12,6 +12,7 @@ import { QuizQuestionEngine } from '../../core/services/quiz-question-engine';
 import { FileUploadService } from '../../core/services/file-upload.service';
 import { MoodleApiService } from '../../core/services/moodle-api.service';
 import { FileDownloadService } from '../../core/services/file-download.service';
+import { DownloadedFilesService } from '../../core/services/downloaded-files.service';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import type { CourseModule } from '../../core/models/course.model';
 
@@ -49,6 +50,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
     private readonly fileUpload = inject(FileUploadService);
     private readonly api = inject(MoodleApiService);
     private readonly fileDownload = inject(FileDownloadService);
+    private readonly downloadedFiles = inject(DownloadedFilesService);
     private readonly sanitizer = inject(DomSanitizer);
     private readonly questionEngine = inject(QuizQuestionEngine);
 
@@ -196,6 +198,9 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
     // --- Folder state ---
     readonly folderFiles = signal<{ filename: string; fileurl: string; filesize: number }[]>([]);
 
+    /** Set of file URLs that have been downloaded (for Open button). */
+    readonly downloadedFileUrls = signal<Set<string>>(new Set());
+
     async ngOnInit(): Promise<void> {
         const params = this.route.snapshot.paramMap;
         this.courseId.set(Number(params.get('courseId')));
@@ -219,6 +224,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
             }
 
             await this.loadModuleContent();
+            void this.refreshDownloadedStatus();
         } catch (err) {
             console.error('Activity load failed:', err);
             this.error.set('Aktivität konnte nicht geladen werden.');
@@ -644,6 +650,7 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
         const file = mod.contents[0];
         await this.fileDownload.downloadFile(file.fileurl, file.filename);
+        this.markDownloaded(file.fileurl);
     }
 
     // ========== Folder ==========
@@ -663,6 +670,46 @@ export class ActivityViewerComponent implements OnInit, OnDestroy {
 
     async downloadFolderFile(fileUrl: string, filename: string): Promise<void> {
         await this.fileDownload.downloadFile(fileUrl, filename);
+        this.markDownloaded(fileUrl);
+    }
+
+    /** Whether a file has been downloaded before. */
+    isFileDownloaded(fileUrl: string): boolean {
+        return this.downloadedFileUrls().has(fileUrl);
+    }
+
+    /** Opens a previously downloaded file using the system default app. */
+    async openDownloadedFile(fileUrl: string): Promise<void> {
+        await this.downloadedFiles.openFile(fileUrl);
+    }
+
+    /** Marks a file URL as downloaded in the UI. */
+    private markDownloaded(fileUrl: string): void {
+        this.downloadedFileUrls.update((set) => {
+            const next = new Set(set);
+            next.add(fileUrl);
+            return next;
+        });
+    }
+
+    /** Checks existing download records for all module contents on load. */
+    private async refreshDownloadedStatus(): Promise<void> {
+        const mod = this.currentModule();
+        if (!mod?.contents?.length) return;
+
+        const downloaded = new Set<string>();
+        const checks: Promise<void>[] = [];
+
+        for (const content of mod.contents) {
+            checks.push(
+                this.downloadedFiles.isDownloaded(content.fileurl).then((yes) => {
+                    if (yes) downloaded.add(content.fileurl);
+                }),
+            );
+        }
+
+        await Promise.all(checks);
+        this.downloadedFileUrls.set(downloaded);
     }
 
     formatTimestamp(ts: number): Date | null {

@@ -88,11 +88,11 @@ export class DownloadedFilesService {
         if (!this.isInDownloadsDir(record.filePath)) return false;
 
         try {
-            const { open } = await import('@tauri-apps/plugin-shell' as string);
-            await open(record.filePath);
+            const { invoke } = await import('@tauri-apps/api/core' as string);
+            await invoke('open_file', { path: record.filePath });
             return true;
-        } catch {
-            // Browser fallback or file no longer exists
+        } catch (err) {
+            console.error('[DownloadedFiles] Failed to open file:', err);
             return false;
         }
     }

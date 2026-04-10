@@ -22,6 +22,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::get_app_version,
             commands::set_window_effect,
+            commands::open_file,
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
